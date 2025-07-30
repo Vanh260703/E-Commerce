@@ -3,6 +3,7 @@ const User = require('../models/User');
 const Token = require('../models/Token');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const cookieParser = require('cookie-parser');
 const { sendResetPasswordEmail, sendVerificationEmail } = require('../../services/emailService');
 const { generateVerifyToken, generateAccessToken, generateRefreshToken, generateResetPassword } = require('../../utils/generateToken');
 const salt = 10;
@@ -111,6 +112,22 @@ class AuthController{
                             expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 ngày
                         })
                         .then(() => {
+                            res.cookie('accessToken', accessToken, {
+                                httpOnly: true,
+                                secure: false, // Đặt true nếu dùng HTTPS
+                                sameSite: 'Lax',
+                                path: '/',
+                                maxAge: 15 * 60 * 1000 // 15 phút
+                            });
+
+                            res.cookie('refreshToken', refreshToken, {
+                                httpOnly: true,
+                                secure: false, // Đặt true nếu dùng HTTPS
+                                sameSite: 'Lax',
+                                path: '/',
+                                maxAge: 7 * 24 * 60 * 60 * 1000 // 15 phút
+                            })
+
                             return res.status(200).json({
                             success: true,
                             message: 'Đăng nhập thành công!!!',
@@ -119,8 +136,6 @@ class AuthController{
                                 username: user.username,
                                 role: user.role,
                             },
-                            accessToken: accessToken,
-                            refreshToken: refreshToken,
                             })
                         })
                     })
@@ -143,7 +158,17 @@ class AuthController{
 
     // [POST] /auth/logout
     logout(req, res, next){
-        Token.deleteOne({ token: req.body.token })
+
+        const refreshToken = req.cookies.refreshToken;
+
+    if (!refreshToken) {
+        return res.status(400).json({
+            success: false,
+            message: 'Không có refresh token trong cookie',
+        });
+    }
+
+        Token.deleteOne({ token: refreshToken })
             .then((result) => {
                 if (result === 0) {
                     return res.status(400).json({
@@ -151,6 +176,9 @@ class AuthController{
                         message: 'Token không tồn tại hoặc đã bị xóa',
                     });
                 };
+
+                res.clearCookie('accessToken');
+                res.clearCookie('refreshToken');
 
                 return res.status(200).json({
                     success: true,
@@ -225,7 +253,7 @@ class AuthController{
 
     // [POST] auth/reset-password/:token
     resetPassword(req, res, next){
-        const token  = req.params.token || req.body.token;
+        const token  = req.params.token;
         console.log(token);
         const { password, confirmPassword } = req.body;
 
@@ -306,7 +334,7 @@ class AuthController{
             });
         };
 
-        console.log(decode);
+        console.log('decode: ', decode);
 
         User.findById(decode.userID)
             .then((user) => {
@@ -320,8 +348,11 @@ class AuthController{
                 user.isVerified = true;
                 return user.save();
             })
-            .then(() => {
-                return res.render('authViews/verify-email');
+            .then((savedUser) => {
+                // chỉ render khi user.save() thành công
+                if (savedUser) {
+                    return res.render('authViews/verify-email');
+                };
             })
             .catch((err) => {
                 console.log(err);
@@ -336,7 +367,8 @@ class AuthController{
 
     // [POST] /auth/refresh-token
     refreshToken(req, res, next) {
-        const refreshToken = req.body.token;
+        const refreshToken = req.cookies.refreshToken;
+        console.log('refreshToken: ', refreshToken);
         if (!refreshToken) return res.status(401).json({
             success: false,
             message: 'Thiếu refresh token!!!',
@@ -345,7 +377,7 @@ class AuthController{
         Token.findOne({ token: refreshToken })
             .then((token) => {
                 if (!token) {
-                    return res.status(400).json({
+                    return res.status(401).json({
                         success: false,
                         message: 'Refresh token không hợp lệ!!!',
                     });
@@ -354,7 +386,7 @@ class AuthController{
                 jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
                     if (err) {
                         console.log(err);
-                        return res.status(403).json({
+                        return res.status(401).json({
                             success: false,
                             message: 'Token hết hạn hoặc lỗi!!!',
                         });
@@ -383,6 +415,25 @@ class AuthController{
             });
     };
 
+    // [POST] /auth/verify-token
+    verifyToken(req, res, next) {
+        const token = req.cookies.accessToken;
+        
+        if (!token) {
+            return res.status(400).json({
+                success: false,
+                message: 'Không có token',
+            });
+        };
+
+        jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+            if (err) {
+                return res.status(401).json({ success: false, message: 'Token hết hạn hoặc không hợp lệ' });
+            }
+
+            return res.status(200).json({ success: true, message: 'Token hợp lệ', user: decoded });
+        });
+    }
 }
 
 module.exports = new AuthController();

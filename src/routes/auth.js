@@ -24,5 +24,7 @@ router.get('/verify-email/:token', authController.verifyEmail);
 
 router.post('/refresh-token', authController.refreshToken);
 
+router.post('/verify-token/', authController.verifyToken);
+
 
 module.exports = router;

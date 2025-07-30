@@ -2,11 +2,15 @@ const express = require('express');
 require('dotenv').config();
 const jwt = require('jsonwebtoken');
 const methodOverride = require('method-override');
-const moment = require('moment');
+const cookieParser = require('cookie-parser');
 const { engine } = require('express-handlebars');
 const app = express();
 const path = require('path');
 const PORT = process.env.PORT || 3000;
+
+// Call Function Helpers
+const formatDate = require('./utils/formatDate.helper');
+const eq = require('./utils/eq.helper');
 
 const db = require('./config/db');
 
@@ -19,7 +23,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
+app.use(cookieParser());
 app.use(methodOverride('_method'));
 
 
@@ -28,6 +32,10 @@ app.engine(
     'hbs',
     engine({
         extname: '.hbs',
+        helpers: {
+            formatDate,
+            eq,
+        }
     })
 )
 

@@ -468,6 +468,7 @@
                         <i class="fas fa-birthday-cake input-icon"></i>
                     </div>
                     <div class="input-helper">Để gửi quà sinh nhật đặc biệt</div>
+                    <div class="error-message" id="dateOfBirthError"></div>
                 </div>
                 <div class="form-group">
                     <label for="gender">Giới tính</label>
@@ -480,6 +481,7 @@
                         </select>
                         <i class="fas fa-venus-mars input-icon"></i>
                     </div>
+                    <div class="error-message" id="genderError"></div>
                 </div>
             </div>
 
@@ -539,7 +541,7 @@
             });
 
             // Validate required fields
-            const requiredFields = ['name', 'username', 'email', 'phone', 'password', 'confirmPassword'];
+            const requiredFields = ['name', 'username', 'email', 'phone', 'password', 'confirmPassword', 'gender', 'dateOfBirth'];
             
             requiredFields.forEach(field => {
                 const input = document.getElementById(field);
@@ -587,6 +589,41 @@
                 isValid = false;
             }
 
+            // Validate gender
+            const gender = document.getElementById('gender').value;
+            if (!gender) {
+                showError('gender', 'Vui lòng chọn giới tính');
+                isValid = false;
+            }
+
+            // Validate dateOfBirth
+            const dateOfBirth = document.getElementById('dateOfBirth').value;
+            if (!dateOfBirth) {
+                showError('dateOfBirth', 'Vui lòng chọn ngày sinh');
+                isValid = false;
+            } else {
+                // Kiểm tra tuổi (ví dụ: phải trên 10 tuổi)
+                let birthDate = new Date(dateOfBirth);
+                const today = new Date();
+                let age = today.getFullYear() - birthDate.getFullYear();
+                const monthDiff = today.getMonth() - birthDate.getMonth();
+                
+                if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                    age--;
+                }
+
+                if (age < 10) {
+                    showError('dateOfBirth', 'Bạn phải trên 10 tuổi để đăng ký');
+                    isValid = false;
+                }
+
+                // Kiểm tra ngày sinh không được trong tương lai
+                if (birthDate > today) {
+                    showError('dateOfBirth', 'Ngày sinh không hợp lệ');
+                    isValid = false;
+                }
+            }
+
             return isValid;
         }
 
@@ -622,8 +659,8 @@
         phone: this.phone.value,
         password: this.password.value,
         confirmPassword: this.confirmPassword.value,
-        gender: document.querySelector('input[name="gender"]:checked')?.value,
-        birthday: this.birthday?.value
+        gender: this.gender.value,
+        dateOfBirth: this.dateOfBirth.value,
     };
 
     // Gọi API đăng ký
@@ -710,13 +747,40 @@
                                 isValid = false;
                             }
                             break;
+                        case 'dateOfBirth':
+                        let birthDate = new Date(this.value);
+                        const today = new Date();
+                        let age = today.getFullYear() - birthDate.getFullYear();
+                        const monthDiff = today.getMonth() - birthDate.getMonth();
+                        
+                        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                            age--;
+                        }
+
+                        if (age < 10) {
+                            showError(fieldName, 'Bạn phải trên 10 tuổi để đăng ký');
+                            isValid = false;
+                        }
+
+                        if (birthDate > today) {
+                            showError(fieldName, 'Ngày sinh không hợp lệ');
+                            isValid = false;
+                        }
+                        break;
+
+                        case 'gender':
+                            if (!this.value) {
+                                showError(fieldName, 'Vui lòng chọn giới tính');
+                                isValid = false;
+                            }
+                            break;
+                                }
+                                
+                                if (isValid) {
+                                    this.classList.remove('error');
+                                    document.getElementById(fieldName + 'Error').style.display = 'none';
+                                }
                     }
-                    
-                    if (isValid) {
-                        this.classList.remove('error');
-                        document.getElementById(fieldName + 'Error').style.display = 'none';
-                    }
-                }
             });
         });
 

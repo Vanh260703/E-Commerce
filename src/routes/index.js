@@ -7,6 +7,10 @@ function route(app){
 
     // routes/user.js
     app.use('/user', userRouter);
+
+    app.get('/api/check-connect', (req, res) => {
+        res.json('Kết nối thành công');
+    })
 }
 
 module.exports = route;

@@ -279,20 +279,130 @@
                 grid-template-columns: 1fr;
             }
         }
+
+        /* Thêm vào trong thẻ <style> */
+        .alert-messages {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 500px;
+            z-index: 1100;
+        }
+
+        .alert {
+            padding: 16px 20px;
+            border-radius: 12px;
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            animation: slideDown 0.3s ease-out;
+            margin-bottom: 15px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .alert-success {
+            background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%);
+            border: 2px solid #81C784;
+            color: #2E7D32;
+        }
+
+        .alert-error {
+            background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+            border: 2px solid #ef5350;
+            color: #c62828;
+        }
+
+        .alert-content {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .alert-icon {
+            font-size: 20px;
+        }
+
+        .alert-text {
+            font-weight: 500;
+            font-size: 15px;
+        }
+
+        .alert-close {
+            background: none;
+            border: none;
+            color: inherit;
+            cursor: pointer;
+            padding: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .alert-close:hover {
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-2px); }
+            20%, 40%, 60%, 80% { transform: translateX(2px); }
+        }
+
+        .shake {
+            animation: shake 0.5s ease-in-out;
+        }
     </style>
 </head>
 <body>
+    <!-- Thông báo  -->
+    <div class="alert-messages">
+        <div class="alert alert-success" id="successAlert">
+            <div class="alert-content">
+                <i class="fas fa-check-circle alert-icon"></i>
+                <span class="alert-text" id="successMessage"></span>
+            </div>
+            <button class="alert-close" onclick="hideAlert('successAlert')">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="alert alert-error" id="errorAlert">
+            <div class="alert-content">
+                <i class="fas fa-exclamation-circle alert-icon"></i>
+                <span class="alert-text" id="errorMessage"></span>
+            </div>
+            <button class="alert-close" onclick="hideAlert('errorAlert')">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    </div>
+
     <div class="profile-container">
         <!-- Sidebar -->
         <div class="profile-sidebar">
             <div class="profile-avatar">
-                <img src="{{user.avatar}}" alt="Avatar" id="userAvatar">
+                <img src="{{userData.avatar}}" alt="Avatar" id="userAvatar">
                 <div class="avatar-upload">
                     <i class="fas fa-camera"></i> Cập nhật ảnh
                 </div>
             </div>
-            <div class="profile-name">{{user.name}}</div>
-            <div class="profile-role">{{user.role}}</div>
+            <div class="profile-name">{{userData.name}}</div>
+            <div class="profile-role">{{userData.role}}</div>
             <ul class="profile-menu">
                 <li>
                     <a href="#" class="active">
@@ -334,19 +444,19 @@
             <div class="info-grid">
                 <div class="info-item">
                     <div class="info-label">Họ và tên</div>
-                    <div class="info-value">{{user.name}}</div>
+                    <div class="info-value">{{userData.name}}</div>
                 </div>
 
                 <div class="info-item">
                     <div class="info-label">Tên đăng nhập</div>
-                    <div class="info-value">{{user.username}}</div>
+                    <div class="info-value">{{userData.username}}</div>
                 </div>
 
                 <div class="info-item">
                     <div class="info-label">Email</div>
-                    <div class="info-value {{#if user.isVerified}}verified{{else}}not-verified{{/if}}">
-                        {{user.email}}
-                        {{#if user.isVerified}}
+                    <div class="info-value {{#if userData.isVerified}}verified{{else}}not-verified{{/if}}">
+                        {{userData.email}}
+                        {{#if userData.isVerified}}
                             <i class="fas fa-check-circle"></i>
                         {{else}}
                             <i class="fas fa-exclamation-circle"></i>
@@ -356,17 +466,22 @@
 
                 <div class="info-item">
                     <div class="info-label">Số điện thoại</div>
-                    <div class="info-value">{{user.phone}}</div>
+                    <div class="info-value">{{userData.phone}}</div>
                 </div>
 
                 <div class="info-item">
                     <div class="info-label">Giới tính</div>
-                    <div class="info-value">{{user.gender}}</div>
+                    <div class="info-value">
+                        {{#if (eq userData.gender "male")}} Nam
+                        {{else if ( eq userData.gender "female" )}} Nữ
+                        {{else if ( eq userData.gender "other" )}} Khác
+                        {{/if}}
+                    </div>
                 </div>
 
                 <div class="info-item">
                     <div class="info-label">Ngày sinh</div>
-                    <div class="info-value">{{user.birthday}}</div>
+                    <div class="info-value">{{formatDate userData.birthday}}</div>
                 </div>
             </div>
         </div>
@@ -407,152 +522,166 @@
         </div>
     </div>
 
-    <script>
-        // Kiểm tra và redirect nếu không có token
-        (function checkAuth() {
-            const token = localStorage.getItem('accessToken');
-            if (!token) {
-                window.location.href = '/auth/login';
-            }
-        })();
+<script>
 
-        // Thêm interceptor cho tất cả các request
-        const originalFetch = window.fetch;
-        window.fetch = function() {
-            let [url, config] = arguments;
-            if (!config) {
-                config = {};
-            }
-            if (!config.headers) {
-                config.headers = {};
-            }
+    // Thêm vào trong thẻ <script>
+    function showAlert(type, message) {
+        const alertId = type === 'success' ? 'successAlert' : 'errorAlert';
+        const alert = document.getElementById(alertId);
+        const messageElement = document.getElementById(type === 'success' ? 'successMessage' : 'errorMessage');
+        
+        messageElement.textContent = message;
+        alert.style.display = 'flex';
+        alert.classList.add('shake');
+        
+        // Remove shake animation after it completes
+        setTimeout(() => {
+            alert.classList.remove('shake');
+        }, 500);
 
-            // Thêm token vào header
-            const token = localStorage.getItem('accessToken');
-            if (token) {
-                if (config.body instanceof FormData) {
-                    // Nếu là FormData (upload file), chỉ thêm Authorization
-                    config.headers['Authorization'] = `Bearer ${token}`;
-                } else {
-                    // Nếu là request thông thường, thêm cả Content-Type
-                    config.headers['Authorization'] = `Bearer ${token}`;
-                    config.headers['Content-Type'] = 'application/json';
-                }
-            }
-
-            return originalFetch(url, config)
-                .then(response => {
-                    // Nếu token hết hạn hoặc không hợp lệ
-                    if (response.status === 401 || response.status === 403) {
-                        localStorage.removeItem('accessToken');
-                        localStorage.removeItem('refreshToken');
-                        window.location.href = '/auth/login';
-                    }
-                    return response;
-                });
-        };
-
-        // Mở/đóng modal chỉnh sửa
-        function openEditModal() {
-            document.getElementById('editModal').style.display = 'flex';
+        // Auto hide after 3 seconds for success messages
+        if (type === 'success') {
+            setTimeout(() => {
+                hideAlert(alertId);
+            }, 3000);
         }
+    }
 
-        function closeEditModal() {
-            document.getElementById('editModal').style.display = 'none';
-        }
+    function hideAlert(alertId) {
+        document.getElementById(alertId).style.display = 'none';
+    }
 
-        // Xử lý form chỉnh sửa
-        document.getElementById('editProfileForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const formData = new FormData(this);
-            const data = Object.fromEntries(formData);
 
-            fetch('/user/profile/update', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-                },
-                body: JSON.stringify(data)
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert('Cập nhật thông tin thành công!');
-                    window.location.reload();
-                } else {
-                    alert(data.message);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Có lỗi xảy ra khi cập nhật thông tin');
-            });
+  // Kiểm tra có accessToken không, nếu không thì chuyển về login
+  (async function ensureAuth() {
+    try {
+    const res = await fetch('/auth/verify-token', { method: 'POST', credentials: 'include' });
+    const data = await res.json();
+    if (!data.success) {
+      window.location.href = '/auth/login';
+    }
+  } catch (err) {
+    
+    window.location.href = '/auth/register';
+  }
+  })();
+
+  // Ghi đè global fetch để gửi cookie tự động (không dùng localStorage nữa)
+  const originalFetch = window.fetch;
+  window.fetch = async function(url, config = {}) {
+    config.headers = config.headers || {};
+
+    // Gắn Content-Type nếu không dùng FormData
+    if (config.body && !(config.body instanceof FormData)) {
+      config.headers['Content-Type'] = 'application/json';
+    }
+
+    config.credentials = 'include'; // gửi cookie lên BE
+
+    let res = await originalFetch(url, config);
+
+    // Nếu token hết hạn → cố gắng refresh
+    if (res.status === 401) {
+      const refreshRes = await originalFetch('/auth/refresh-token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include'
+      });
+
+      const refreshData = await refreshRes.json();
+
+      if (refreshData.success) {
+        // Gọi lại API cũ sau khi refresh thành công
+        res = await originalFetch(url, config);
+      } else {
+        window.location.href = '/auth/login';
+        return Promise.reject('Không thể refresh token');
+      }
+    }
+
+    return res;
+  };
+
+  // Mở / đóng modal chỉnh sửa
+  function openEditModal() {
+    document.getElementById('editModal').style.display = 'flex';
+  }
+
+  function closeEditModal() {
+    document.getElementById('editModal').style.display = 'none';
+  }
+
+  // Submit form cập nhật thông tin cá nhân
+  document.getElementById('editProfileForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    const data = Object.fromEntries(formData.entries());
+
+    try {
+      const res = await fetch('/user/profile', {
+        method: 'PUT',
+        body: JSON.stringify(data)
+      });
+      const result = await res.json();
+      if (result.success) {
+        showAlert('success', 'Cập nhật thông tin thành công!');
+        location.reload();
+      } else{
+        showAlert('error', 'Cập nhật thông tin thất bại!!!');
+      }
+    } catch (err) {
+      console.error('ERROR: ', err);
+      showAlert('error', 'Có lỗi xảy ra khi tải ảnh');
+    }
+  });
+
+  // Xử lý upload avatar
+  document.querySelector('.profile-avatar').addEventListener('click', () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = async function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const formData = new FormData();
+      formData.append('avatar', file);
+
+      try {
+        const res = await fetch('/user/profile/avatar', {
+          method: 'POST',
+          body: formData
         });
-
-        // Xử lý upload avatar
-        document.querySelector('.profile-avatar').addEventListener('click', function() {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = 'image/*';
-            input.onchange = function(e) {
-                const file = e.target.files[0];
-                if (file) {
-                    const formData = new FormData();
-                    formData.append('avatar', file);
-
-                    fetch('/user/profile/avatar', {
-                        method: 'POST',
-                        headers: {
-                            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-                        },
-                        body: formData
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            document.getElementById('userAvatar').src = data.avatarUrl;
-                            alert('Cập nhật ảnh đại diện thành công!');
-                        } else {
-                            alert(data.message);
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        alert('Có lỗi xảy ra khi cập nhật ảnh đại diện');
-                    });
-                }
-            };
-            input.click();
-        });
-
-        // Xử lý đăng xuất
-        function logout() {
-            const refreshToken = localStorage.getItem('refreshToken');
-            
-            fetch('/auth/logout', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-                },
-                body: JSON.stringify({ token: refreshToken })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    localStorage.removeItem('accessToken');
-                    localStorage.removeItem('refreshToken');
-                    window.location.href = '/auth/login';
-                } else {
-                    alert(data.message);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Có lỗi xảy ra khi đăng xuất');
-            });
+        const data = await res.json();
+        if (data.success) {
+          document.getElementById('userAvatar').src = data.avatarUrl;
+          showAlert('success', 'Cập nhật ảnh đại diện thành công!');
+        } else {
+          showAlert('error', data.message);
         }
-    </script>
+      } catch (err) {
+        console.error(err);
+        showAlert('error', 'Có lỗi xảy ra khi tải ảnh');
+      }
+    };
+    input.click();
+  });
+
+  // Đăng xuất
+  async function logout() {
+    try {
+      await fetch('/auth/logout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include'
+      });
+    } catch (e) {
+      console.warn('Logout gọi không thành công');
+    } finally {
+      window.location.href = '/auth/login';
+    }
+  }
+</script>
+
 </body>
 </html>
