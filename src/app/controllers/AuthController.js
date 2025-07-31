@@ -117,7 +117,7 @@ class AuthController{
                                 secure: false, // Đặt true nếu dùng HTTPS
                                 sameSite: 'Lax',
                                 path: '/',
-                                maxAge: 15 * 60 * 1000 // 15 phút
+                                maxAge: 24 * 60 * 60 * 1000 // 1 ngày 
                             });
 
                             res.cookie('refreshToken', refreshToken, {
@@ -125,7 +125,7 @@ class AuthController{
                                 secure: false, // Đặt true nếu dùng HTTPS
                                 sameSite: 'Lax',
                                 path: '/',
-                                maxAge: 7 * 24 * 60 * 60 * 1000 // 15 phút
+                                maxAge: 7 * 24 * 60 * 60 * 1000 // 7 ngày
                             })
 
                             return res.status(200).json({
@@ -399,10 +399,18 @@ class AuthController{
                     }
 
                     const newAccessToken = generateAccessToken(userPayload);
+                    // Set lại cookie mới
+                    res.cookie('accessToken', newAccessToken, {
+                        httpOnly: true,
+                        secure: false,
+                        sameSite: 'Lax',
+                        maxAge: 24 * 60 * 60 * 1000 // 1 ngày
+                    });
+
                     return res.status(200).json({
                         success: true,
-                        message: 'refresh token thành công!!!',
-                        newAccessToken: newAccessToken,
+                        message: 'refresh thành công!',
+                        accessToken: newAccessToken,
                     });
                 });
             })

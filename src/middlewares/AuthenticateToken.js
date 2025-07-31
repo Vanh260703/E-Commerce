@@ -2,20 +2,28 @@
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 function AuthenticateToken(req, res, next){
-    const token =  req.cookies.accessToken;
-    console.log('🛡️ token trong cookie: ', token);
+    const accessToken = req.cookies.accessToken;
+    const refreshToken = req.cookies.refreshToken;
 
-    if(!token) return res.status(401).json({
-        success: false,
-        message: 'Có lỗi xảy ra trong middleware',
-    });
+    console.log('🛡️ AccessToken:', accessToken ? '✅ Có' : '❌ Không');
+    console.log('🔁 RefreshToken:', refreshToken ? '✅ Có' : '❌ Không');
 
-    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
-        if (err) return res.status(403).json({
+    if(!accessToken) {
+        return res.status(401).json({
             success: false,
-            error: err,
-            message: 'Không thể truy cập',
-        })
+            message: 'Không có accessToken trong cookie',
+        });
+    }
+
+
+    jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
+        if (err) {
+            console.error('❌ AccessToken lỗi:', err.message);
+            return res.status(403).json({
+                success: false,
+                message: 'AccessToken không hợp lệ hoặc hết hạn',
+            });
+        }
 
         req.user = user;
         next();

@@ -367,6 +367,90 @@
         .shake {
             animation: shake 0.5s ease-in-out;
         }
+
+
+        .address-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            border: 2px solid var(--border-color);
+            margin-bottom: 15px;
+            position: relative;
+            transition: all 0.3s;
+        }
+
+        .address-card:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .default-badge {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background: var(--primary-color);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .address-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .btn-action {
+            padding: 8px 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            border: none;
+            transition: all 0.3s;
+        }
+
+        .btn-edit { background: #E8F5E9; color: #2E7D32; }
+        .btn-delete { background: #FFEBEE; color: #C62828; }
+        .btn-default { background: #E3F2FD; color: #1565C0; }
+
+        .btn-action:hover {
+            filter: brightness(0.95);
+            transform: translateY(-1px);
+        }
+
+        /* Add to your existing style section */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            border: 2px dashed #dee2e6;
+        }
+
+        .empty-state i {
+            font-size: 40px;
+            color: #adb5bd;
+            margin-bottom: 15px;
+        }
+
+        .empty-state p {
+            color: #6c757d;
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+
+        .empty-state .btn-edit {
+            display: inline-flex;
+            margin: 0 auto;
+        }
     </style>
 </head>
 <body>
@@ -405,22 +489,22 @@
             <div class="profile-role">{{userData.role}}</div>
             <ul class="profile-menu">
                 <li>
-                    <a href="#" class="active">
+                    <a href="#info" onclick="loadContent('profile')" class="active">
                         <i class="fas fa-user"></i> Thông tin cá nhân
                     </a>
                 </li>
                 <li>
-                    <a href="#">
+                    <a href="#orders" onclick="loadContent('orders')">
                         <i class="fas fa-shopping-bag"></i> Đơn hàng của tôi
                     </a>
                 </li>
                 <li>
-                    <a href="#">
+                    <a href="#favorites" onclick="loadContent('favorites')">
                         <i class="fas fa-heart"></i> Sản phẩm yêu thích
                     </a>
                 </li>
                 <li>
-                    <a href="#">
+                    <a href="#address" onclick="loadContent('address')">
                         <i class="fas fa-address-book"></i> Sổ địa chỉ
                     </a>
                 </li>
@@ -434,54 +518,94 @@
 
         <!-- Main Content -->
         <div class="profile-main">
-            <div class="section-title">
-                Thông tin cá nhân
-                <button class="btn-edit" onclick="openEditModal()">
-                    <i class="fas fa-edit"></i> Chỉnh sửa
-                </button>
-            </div>
+            <div id="contentArea">
+                <!-- Profile Content -->
+                <div id="profileContent">
+                    <div class="section-title">
+                        Thông tin cá nhân
+                        <button class="btn-edit" onclick="openEditModal()">
+                            <i class="fas fa-edit"></i> Chỉnh sửa
+                        </button>
+                    </div>
 
-            <div class="info-grid">
-                <div class="info-item">
-                    <div class="info-label">Họ và tên</div>
-                    <div class="info-value">{{userData.name}}</div>
-                </div>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <div class="info-label">Họ và tên</div>
+                            <div class="info-value">{{userData.name}}</div>
+                        </div>
 
-                <div class="info-item">
-                    <div class="info-label">Tên đăng nhập</div>
-                    <div class="info-value">{{userData.username}}</div>
-                </div>
+                        <div class="info-item">
+                            <div class="info-label">Tên đăng nhập</div>
+                            <div class="info-value">{{userData.username}}</div>
+                        </div>
 
-                <div class="info-item">
-                    <div class="info-label">Email</div>
-                    <div class="info-value {{#if userData.isVerified}}verified{{else}}not-verified{{/if}}">
-                        {{userData.email}}
-                        {{#if userData.isVerified}}
-                            <i class="fas fa-check-circle"></i>
-                        {{else}}
-                            <i class="fas fa-exclamation-circle"></i>
-                        {{/if}}
+                        <div class="info-item">
+                            <div class="info-label">Email</div>
+                            <div class="info-value {{#if userData.isVerified}}verified{{else}}not-verified{{/if}}">
+                                {{userData.email}}
+                                {{#if userData.isVerified}}
+                                    <i class="fas fa-check-circle"></i>
+                                {{else}}
+                                    <i class="fas fa-exclamation-circle"></i>
+                                {{/if}}
+                            </div>
+                        </div>
+
+                        <div class="info-item">
+                            <div class="info-label">Số điện thoại</div>
+                            <div class="info-value">{{userData.phone}}</div>
+                        </div>
+
+                        <div class="info-item">
+                            <div class="info-label">Giới tính</div>
+                            <div class="info-value">
+                                {{#if (eq userData.gender "male")}} Nam
+                                {{else if ( eq userData.gender "female" )}} Nữ
+                                {{else if ( eq userData.gender "other" )}} Khác
+                                {{/if}}
+                            </div>
+                        </div>
+
+                        <div class="info-item">
+                            <div class="info-label">Ngày sinh</div>
+                            <div class="info-value">{{formatDate userData.birthday}}</div>
+                        </div>
                     </div>
                 </div>
-
-                <div class="info-item">
-                    <div class="info-label">Số điện thoại</div>
-                    <div class="info-value">{{userData.phone}}</div>
-                </div>
-
-                <div class="info-item">
-                    <div class="info-label">Giới tính</div>
-                    <div class="info-value">
-                        {{#if (eq userData.gender "male")}} Nam
-                        {{else if ( eq userData.gender "female" )}} Nữ
-                        {{else if ( eq userData.gender "other" )}} Khác
-                        {{/if}}
+                <!-- Address Content -->
+                <div id="addressContent" style="display: none;">
+                    <div class="section-title">
+                        Sổ Địa Chỉ
+                        <button class="btn-edit" onclick="openAddAddressModal()">
+                            <i class="fas fa-plus"></i> Thêm địa chỉ mới
+                        </button>
                     </div>
-                </div>
-
-                <div class="info-item">
-                    <div class="info-label">Ngày sinh</div>
-                    <div class="info-value">{{formatDate userData.birthday}}</div>
+                    <div class="address-list">
+                        {{#each userData.addresses}}
+                        <div class="address-card">
+                            {{#if isDefault}}
+                            <div class="default-badge">Mặc định</div>
+                            {{/if}}
+                            <div class="address-info">
+                                <div class="recipient">{{recipientName}}</div>
+                                <div class="address-text">{{addressLine}}, {{ward}}, {{city}}</div>
+                            </div>
+                            <div class="address-actions">
+                                <button class="btn-action btn-edit" onclick="editAddress('{{_id}}')">
+                                    <i class="fas fa-edit"></i> Sửa
+                                </button>
+                                <button class="btn-action btn-delete" onclick="deleteAddress('{{_id}}')">
+                                    <i class="fas fa-trash"></i> Xóa
+                                </button>
+                                {{#unless isDefault}}
+                                <button class="btn-action btn-default" onclick="setDefaultAddress('{{_id}}')">
+                                    <i class="fas fa-check"></i> Đặt mặc định
+                                </button>
+                                {{/unless}}
+                            </div>
+                        </div>
+                        {{/each}}
+                    </div>
                 </div>
             </div>
         </div>
@@ -522,7 +646,212 @@
         </div>
     </div>
 
+    <!-- Add Address Modal -->
+    <div class="modal" id="addressModal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeAddAddressModal()">
+                <i class="fas fa-times"></i>
+            </button>
+            <h2 style="margin-bottom: 20px;">Thêm địa chỉ mới</h2>
+            <form id="addressForm">
+                <div class="form-group">
+                    <label>Tên người nhận</label>
+                    <input type="text" class="form-control" name="recipientName" required>
+                </div>
+                <div class="form-group">
+                    <label>Địa chỉ</label>
+                    <input type="text" class="form-control" name="addressLine" required>
+                </div>
+                <div class="form-group">
+                    <label>Phường/Xã</label>
+                    <select id="wardSelect" class="form-control" name="ward" required disabled></select>
+
+                </div>
+                <div class="form-group">
+                    <label>Tỉnh/Thành phố</label>
+                    <select id="provinceSelect" class="form-control" name="city" required></select>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" name="isDefault" id="isDefault">
+                    <label for="isDefault">Đặt làm địa chỉ mặc định</label>
+                </div>
+                <button type="submit" class="btn-edit" style="width: 100%;">
+                    <i class="fas fa-save"></i> Lưu địa chỉ
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Address Modal -->
+    <div class="modal" id="editAddressModal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeEditAddressModal()">
+                <i class="fas fa-times"></i>
+            </button>
+            <h2 style="margin-bottom: 20px;">Chỉnh sửa địa chỉ</h2>
+            <form id="editAddressForm">
+                <input type="hidden" id="editAddressId" name="addressId">
+                <div class="form-group">
+                    <label>Tên người nhận</label>
+                    <input type="text" class="form-control" name="recipientName" id="editRecipientName" required>
+                </div>
+                <div class="form-group">
+                    <label>Địa chỉ</label>
+                    <input type="text" class="form-control" name="addressLine" id="editAddressLine" required>
+                </div>
+                <div class="form-group">
+                    <label>Phường/Xã</label>
+                    <select id="editWardSelect" class="form-control" name="ward" required disabled></select>
+                </div>
+                <div class="form-group">
+                    <label>Tỉnh/Thành phố</label>
+                    <select id="editProvinceSelect" class="form-control" name="city" required></select>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" name="isDefault" id="editIsDefault">
+                    <label for="editIsDefault">Đặt làm địa chỉ mặc định</label>
+                </div>
+                <button type="submit" class="btn-edit" style="width: 100%;">
+                    <i class="fas fa-save"></i> Lưu thay đổi
+                </button>
+            </form>
+        </div>
+    </div>
 <script>
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const provinceSelect = document.getElementById('provinceSelect');
+        const wardSelect = document.getElementById('wardSelect');
+
+        // Lấy danh sách tỉnh/thành phố
+        fetch('/api/provinces')
+            .then(res => res.json())
+            .then(provinces => {
+            provinceSelect.innerHTML = `<option value="">Chọn tỉnh/thành</option>`;
+            provinces.forEach(p => {
+                provinceSelect.innerHTML += `<option value="${p.code}" data-name="${p.name}">${p.name}</option>`;
+            });
+            provinceSelect.disabled = false;
+            });
+
+        // Khi chọn tỉnh/thành ➜ lấy phường/xã
+        provinceSelect.addEventListener('change', () => {
+            const provinceCode = provinceSelect.value;
+            console.log(provinceCode);
+            wardSelect.innerHTML = `<option value="">Chọn phường/xã</option>`;
+            wardSelect.disabled = true;
+
+            if (!provinceCode) return;
+
+            fetch(`/api/wards/${provinceCode}`)
+            .then(res => res.json())
+            .then(wards => {
+                wards.forEach(w => {
+                wardSelect.innerHTML += `<option value="${w.code}" data-name="${w.name}">${w.name}</option>`;
+                });
+                wardSelect.disabled = false;
+            });
+        });
+    });
+
+    function loadContent(section) {
+        // Remove active class from all menu items
+        document.querySelectorAll('.profile-menu a').forEach(item => {
+            item.classList.remove('active');
+        });
+        
+        // Add active class to clicked menu item
+        const targetLink = document.querySelector(`.profile-menu a[href="#${section}"]`);
+        if (targetLink) {
+            targetLink.classList.add('active');
+        }
+        
+        // Hide all content sections
+        const profileContent = document.querySelector('#profileContent');
+        const addressContent = document.querySelector('#addressContent');
+        
+        profileContent.style.display = 'none';
+        addressContent.style.display = 'none';
+        
+        // Show selected section
+        switch(section) {
+            case 'profile':
+                profileContent.style.display = 'block';
+                break;
+            case 'address':
+                addressContent.style.display = 'block';
+                // Kiểm tra xem đã có sẵn địa chỉ chưa
+                const existingAddresses = addressContent.querySelector('.address-list').children.length;
+                // Chỉ load addresses nếu chưa có data
+                if (existingAddresses === 0) {
+                    loadAddresses();
+                }
+                break;
+        }
+    }
+
+    async function loadAddresses() {
+        const addressList = document.querySelector('.address-list');
+        
+        try {
+            const res = await fetch('/user/address');
+            if (!res.ok) {
+                throw new Error('Network response was not ok');
+            }
+            
+            const data = await res.json();
+            
+            // Kiểm tra nếu không có địa chỉ
+            if (!data.addresses || data.addresses.length === 0) {
+                addressList.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <p>Bạn chưa có địa chỉ nào</p>
+                        <button class="btn-edit" onclick="openAddAddressModal()">
+                            <i class="fas fa-plus"></i> Thêm địa chỉ mới
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+
+            // Render địa chỉ nếu có
+            addressList.innerHTML = data.addresses.map(address => `
+                <div class="address-card">
+                    ${address.isDefault ? '<div class="default-badge">Mặc định</div>' : ''}
+                    <div class="address-info">
+                        <div class="recipient">${address.recipientName || ''}</div>
+                        <div class="address-text">${address.addressLine || ''}, ${address.ward || ''}, ${address.city || ''}</div>
+                    </div>
+                    <div class="address-actions">
+                        <button class="btn-action btn-edit" onclick="editAddress('${address._id}')">
+                            <i class="fas fa-edit"></i> Sửa
+                        </button>
+                        <button class="btn-action btn-delete" onclick="deleteAddress('${address._id}')">
+                            <i class="fas fa-trash"></i> Xóa
+                        </button>
+                        ${!address.isDefault ? `
+                            <button class="btn-action btn-default" onclick="setDefaultAddress('${address._id}')">
+                                <i class="fas fa-check"></i> Đặt mặc định
+                            </button>
+                        ` : ''}
+                    </div>
+                </div>
+            `).join('');
+
+        } catch (err) {
+            console.error('Error loading addresses:', err);
+            addressList.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <p>Có lỗi xảy ra khi tải danh sách địa chỉ</p>
+                    <button class="btn-edit" onclick="loadAddresses()">
+                        <i class="fas fa-redo"></i> Thử lại
+                    </button>
+                </div>
+            `;
+        }
+    }
 
     // Thêm vào trong thẻ <script>
     function showAlert(type, message) {
@@ -580,6 +909,7 @@
 
     let res = await originalFetch(url, config);
 
+
     // Nếu token hết hạn → cố gắng refresh
     if (res.status === 401) {
       const refreshRes = await originalFetch('/auth/refresh-token', {
@@ -602,6 +932,63 @@
     return res;
   };
 
+    // Function để tải danh sách địa chỉ
+    async function loadAddresses() {
+        try {
+            const res = await fetch('/user/address');
+            const data = await res.json();
+            const addressList = document.querySelector('.address-list');
+
+            if (!data.success) {
+                showAlert('error', data.message || 'Không thể tải danh sách địa chỉ');
+                return;
+            }
+
+            if (!data.addresses || data.addresses.length === 0) {
+                addressList.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <p>Bạn chưa có địa chỉ nào</p>
+                    </div>
+                `;
+                return;
+            }
+
+            addressList.innerHTML = data.addresses.map(address => `
+                <div class="address-card">
+                    ${address.isDefault ? '<div class="default-badge">Mặc định</div>' : ''}
+                    <div class="address-info">
+                        <div class="recipient">${address.recipientName}</div>
+                        <div class="address-text">${address.addressLine}, ${address.ward}, ${address.city}</div>
+                    </div>
+                    <div class="address-actions">
+                        <button class="btn-action btn-edit" onclick="editAddress('${address._id}')">
+                            <i class="fas fa-edit"></i> Sửa
+                        </button>
+                        <button class="btn-action btn-delete" onclick="deleteAddress('${address._id}')">
+                            <i class="fas fa-trash"></i> Xóa
+                        </button>
+                        ${!address.isDefault ? `
+                            <button class="btn-action btn-default" onclick="setDefaultAddress('${address._id}')">
+                                <i class="fas fa-check"></i> Đặt mặc định
+                            </button>
+                        ` : ''}
+                    </div>
+                </div>
+            `).join('');
+
+        } catch (err) {
+            console.log(err);
+            showAlert('error', 'Có lỗi xảy ra khi tải danh sách địa chỉ');
+        }
+    }
+
+// Load content based on URL hash when page loads
+window.addEventListener('load', () => {
+    const hash = window.location.hash.slice(1) || 'profile';
+    loadContent(hash);
+});
+
   // Mở / đóng modal chỉnh sửa
   function openEditModal() {
     document.getElementById('editModal').style.display = 'flex';
@@ -611,6 +998,270 @@
     document.getElementById('editModal').style.display = 'none';
   }
 
+  // Mở / đóng modal thêm địa chỉ
+  function openAddAddressModal() {
+    const modal = document.getElementById('addressModal');
+    const form = document.getElementById('addressForm');
+    form.reset(); // Reset form when opening
+    modal.style.display = 'flex';
+  }
+
+  function closeAddAddressModal() {
+    const modal = document.getElementById('addressModal');
+    modal.style.display = 'none';
+  }
+
+  // Mở / đóng modal chỉnh sửa địa chỉ
+  function openEditAddressModal() {
+    document.getElementById('editAddressModal').style.display = 'flex';
+  }
+
+  function closeEditAddressModal() {
+    document.getElementById('editAddressModal').style.display = 'none';
+  }
+
+  // Add event listener for the address form
+  document.getElementById('addressForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const submitBtn = this.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+    
+    try {
+        const formData = new FormData(this);
+        const data = Object.fromEntries(formData.entries());
+
+        const selectedProvinceOption = document.querySelector('#provinceSelect option:checked');
+        const selectedWardOption = document.querySelector('#wardSelect option:checked');
+
+        data.cityName = selectedProvinceOption?.textContent || '';
+        data.wardName = selectedWardOption?.textContent || '';
+
+        // Validate dữ liệu
+        if (!data.recipientName || !data.addressLine || !data.ward || !data.city) {
+            showAlert('error', 'Vui lòng điền đầy đủ thông tin');
+            return;
+        }
+
+        const res = await fetch('/user/address', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        });
+
+        const result = await res.json();
+        
+        if (result.success) {
+            showAlert('success', 'Thêm địa chỉ thành công!');
+            closeAddAddressModal();
+            this.reset();
+            loadAddresses();
+        } else {
+            showAlert('error', result.message || 'Thêm địa chỉ thất bại!');
+        }
+    } catch (err) {
+        console.error('Error:', err);
+        showAlert('error', 'Có lỗi xảy ra khi thêm địa chỉ');
+    } finally {
+        submitBtn.disabled = false;
+    }
+  });
+
+
+  // Edit Address
+  async function editAddress(addressId) {
+    try {
+        const res = await fetch(`/user/address/${addressId}`);
+        const data = await res.json();
+        
+        if (data.success) {
+            const modal = document.getElementById('editAddressModal');
+            const form = document.getElementById('editAddressForm');
+            const address = data.address;
+            console.log('✅ ADDRESS:', address);
+            console.log('🏙️ city:', address.city);
+            console.log('🏘️ ward:', address.ward);
+            
+            // Lưu ID địa chỉ vào hidden input
+            document.getElementById('editAddressId').value = addressId;
+            
+            // Điền thông tin vào form
+            document.getElementById('editRecipientName').value = address.recipientName;
+            document.getElementById('editAddressLine').value = address.addressLine;
+            
+            // Xử lý select tỉnh/thành và phường/xã
+            const editProvinceSelect = document.getElementById('editProvinceSelect');
+            const editWardSelect = document.getElementById('editWardSelect');
+            
+            // Load provinces first
+            const provincesRes = await fetch('/api/provinces');
+            const provinces = await provincesRes.json();
+            
+            editProvinceSelect.innerHTML = `<option value="">Chọn tỉnh/thành</option>`;
+            provinces.forEach(p => {
+                editProvinceSelect.innerHTML += `
+                    <option value="${p.code}" data-name="${p.name}" 
+                        ${p.name.trim() === address.city.trim() ? 'selected' : ''}>
+                        ${p.name}
+                    </option>`;
+            });
+            
+            // Load wards for selected province
+            if (address.city) {
+                const selectedProvince = provinces.find(p => p.name.trim() === address.city.trim());
+                if (selectedProvince) {
+                    const wardsRes = await fetch(`/api/wards/${selectedProvince.code}`);
+                    const wards = await wardsRes.json();
+                    
+                    editWardSelect.innerHTML = `<option value="">Chọn phường/xã</option>`;
+                    wards.forEach(w => {
+                        editWardSelect.innerHTML += `
+                            <option value="${w.code}" data-name="${w.name}"
+                                ${w.name.trim() === address.ward.trim() ? 'selected' : ''}>
+                                ${w.name}
+                            </option>`;
+                    });
+                    editWardSelect.disabled = false;
+                }
+            }
+
+            document.getElementById('editIsDefault').checked = address.isDefault;
+            
+            // Hiển thị modal
+            modal.style.display = 'flex';
+            
+            // Xử lý sự kiện thay đổi tỉnh/thành
+            editProvinceSelect.addEventListener('change', async () => {
+                const provinceCode = editProvinceSelect.value;
+                editWardSelect.innerHTML = `<option value="">Chọn phường/xã</option>`;
+                editWardSelect.disabled = true;
+
+                if (!provinceCode) return;
+
+                const wardsRes = await fetch(`/api/wards/${provinceCode}`);
+                const wards = await wardsRes.json();
+                wards.forEach(w => {
+                    editWardSelect.innerHTML += `
+                        <option value="${w.code}" data-name="${w.name}">
+                            ${w.name}
+                        </option>`;
+                });
+                editWardSelect.disabled = false;
+            });
+        } else {
+            showAlert('error', data.message);
+        }
+    } catch (err) {
+        console.error('ERROR:', err);
+        showAlert('error', 'Có lỗi xảy ra khi tải thông tin địa chỉ');
+    }
+}
+
+function closeEditAddressModal() {
+    document.getElementById('editAddressModal').style.display = 'none';
+}
+
+
+// Delete Address
+async function deleteAddress(addressId) {
+    // Confirm before deleting
+    if (!confirm('Bạn có chắc chắn muốn xóa địa chỉ này?')) {
+        return;
+    }
+
+    try {
+        const res = await fetch(`/user/address/${addressId}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+            showAlert('success', 'Xóa địa chỉ thành công!');
+            // Reload address list
+            loadAddresses();
+        } else {
+            showAlert('error', data.message || 'Xóa địa chỉ thất bại!');
+        }
+    } catch (err) {
+        console.error('Error:', err);
+        showAlert('error', 'Có lỗi xảy ra khi xóa địa chỉ');
+    }
+}
+
+// Set Default Address
+async function setDefaultAddress(addressId) {
+    try {
+        const res = await fetch(`/user/address/${addressId}/default`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+            showAlert('success', 'Đã đặt làm địa chỉ mặc định');
+            // Reload address list to show updated default status
+            loadAddresses();
+        } else {
+            showAlert('error', data.message || 'Không thể đặt địa chỉ mặc định');
+        }
+    } catch (err) {
+        console.error('Error setting default address:', err);
+        showAlert('error', 'Có lỗi xảy ra khi đặt địa chỉ mặc định');
+    }
+}
+
+// Add event listener for edit address form
+document.getElementById('editAddressForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const submitBtn = this.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+    
+    try {
+        const formData = new FormData(this);
+        const data = Object.fromEntries(formData.entries());
+        const addressId = data.addressId;
+        delete data.addressId;
+
+        const selectedProvinceOption = document.querySelector('#editProvinceSelect option:checked');
+        const selectedWardOption = document.querySelector('#editWardSelect option:checked');
+
+        data.cityName = selectedProvinceOption?.textContent || '';
+        data.wardName = selectedWardOption?.textContent || '';
+
+        const res = await fetch(`/user/address/${addressId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        });
+
+        const result = await res.json();
+        
+        if (result.success) {
+            showAlert('success', 'Cập nhật địa chỉ thành công!');
+            closeEditAddressModal();
+            loadAddresses();
+        } else {
+            showAlert('error', result.message || 'Cập nhật địa chỉ thất bại!');
+        }
+    } catch (err) {
+        console.error('Error:', err);
+        showAlert('error', 'Có lỗi xảy ra khi cập nhật địa chỉ');
+    } finally {
+        submitBtn.disabled = false;
+    }
+});
   // Submit form cập nhật thông tin cá nhân
   document.getElementById('editProfileForm').addEventListener('submit', async function(e) {
     e.preventDefault();
