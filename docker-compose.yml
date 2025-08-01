@@ -1,4 +1,4 @@
-version: '3.8'
+
 
 services:
   app:
@@ -10,6 +10,7 @@ services:
       - /app/node_modules
     depends_on:
       - mongo
+      - minio
     env_file:
       - .env  
     restart: always
@@ -22,5 +23,20 @@ services:
       - mongo-data:/data/db
     restart: always
 
+  minio:
+    image: quay.io/minio/minio
+    container_name: minio
+    ports:
+      - "9000:9000"     # API access
+      - "9001:9001"     # Web console
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio-data:/data
+    restart: always  
+
 volumes:
   mongo-data:
+  minio-data:

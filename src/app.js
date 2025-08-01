@@ -13,10 +13,12 @@ const formatDate = require('./utils/formatDate.helper');
 const eq = require('./utils/eq.helper');
 
 const db = require('./config/db');
+const { initMinioBucket } = require('./services/uploadMinioService');
 
 // Kết nối đến db
 db.connect();
-
+// Khởi tạo bucket
+initMinioBucket();
 const route = require('./routes');
 
 app.use(express.static(path.join(__dirname, 'public')));

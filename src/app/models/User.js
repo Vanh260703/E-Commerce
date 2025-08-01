@@ -17,7 +17,7 @@ const UserSchema = new mongoose.Schema(
         phone: {type: String, required: true},
         dateOfBirth: {type:Date, required: true},
         gender: {type: String, enum: ['male', 'female', 'other'], required: true},
-        avata: {url: String, publicId: String},
+        avatar: {url: String, publicId: String},
         role: {type: String, enum: ['admin', 'seller', 'user'], default: 'user'},
         addresses: [AddressSchema],
         isVerified: {type: Boolean, default: false},

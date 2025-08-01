@@ -2,6 +2,9 @@
 const User = require('../models/User');
 const Province = require('../models/Province');
 const Ward = require('../models/Ward');
+const { uploadToMinio } = require('../../services/uploadMinioService');
+const path = require('path');
+const fs = require('fs');
 
 class UserController {
     // [GET] /user/profile
@@ -261,6 +264,34 @@ class UserController {
                 });
             });
     }
+
+    // [POST] /user/upload-avatar
+    async uploadAvatar(req, res, next) {
+        const user = req.user;
+        const file = req.file;
+        const publicId = `avatar-${Date.now()}${path.extname(file.originalname)}`;
+
+        const url = await uploadToMinio(file.path, publicId);
+        if (!file) {
+            return res.status(400).json({
+                success: false,
+                message: 'Không thấy file ảnh',
+            });
+        };
+
+        // Xóa file tạm
+        fs.unlinkSync(file.path);
+
+        // Cập nhật URL ảnh vào user
+        await User.findByIdAndUpdate(user.id, {
+            avatar: { url,  publicId}
+        });
+
+    return res.status(200).json({
+        success: true,
+        message: 'Upload ảnh thành công!',
+    });
+    };
 
 }
 
