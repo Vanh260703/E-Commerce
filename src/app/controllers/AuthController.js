@@ -300,7 +300,7 @@ class AuthController{
                     });
                 };
 
-                bcrypt.hash(password, salt)
+                return bcrypt.hash(password, salt)
                     .then((hashedPassword) => {
                         user.password = hashedPassword;
                         user.save();

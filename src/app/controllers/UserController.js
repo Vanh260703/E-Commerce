@@ -5,6 +5,9 @@ const Ward = require('../models/Ward');
 const { uploadToMinio } = require('../../services/uploadMinioService');
 const path = require('path');
 const fs = require('fs');
+const { url } = require('inspector');
+const bcrypt = require('bcrypt');
+const saltRounds = 10;
 
 class UserController {
     // [GET] /user/profile
@@ -23,6 +26,7 @@ class UserController {
                     gender: user.gender,
                     birthday: user.dateOfBirth,
                     addresses: user.addresses,
+                    avatar: user.avatar,
                 };
                 return res.status(200).render('userViews/profile', { userData });
             })
@@ -266,33 +270,92 @@ class UserController {
     }
 
     // [POST] /user/upload-avatar
-    async uploadAvatar(req, res, next) {
-        const user = req.user;
-        const file = req.file;
-        const publicId = `avatar-${Date.now()}${path.extname(file.originalname)}`;
+    uploadAvatar(req, res, next) {
+    const user = req.user;
+    const file = req.file;
 
-        const url = await uploadToMinio(file.path, publicId);
-        if (!file) {
-            return res.status(400).json({
-                success: false,
-                message: 'Không thấy file ảnh',
-            });
-        };
-
-        // Xóa file tạm
-        fs.unlinkSync(file.path);
-
-        // Cập nhật URL ảnh vào user
-        await User.findByIdAndUpdate(user.id, {
-            avatar: { url,  publicId}
+    if (!file) {
+        return res.status(400).json({
+            success: false,
+            message: 'Không thấy file ảnh',
         });
+    }
 
-    return res.status(200).json({
-        success: true,
-        message: 'Upload ảnh thành công!',
-    });
+    const publicId = `avatar-${Date.now()}${path.extname(file.originalname)}`;
+
+    console.log('PUBLIC ID: ', publicId);
+    console.log('FILE.PATH: ', file.path);
+
+    let imageUrl = '';
+
+    uploadToMinio(file.path, publicId)
+        .then((url) => {
+            
+            imageUrl = url;
+
+            // Xoá file tạm
+            fs.unlink(file.path, (err) => {
+                if (err) console.error('❌ Lỗi xoá file tạm:', err);
+            });
+
+            // Cập nhật vào DB
+            return  User.findByIdAndUpdate(user.id, {
+                avatar: { url, publicId }
+            });
+        })
+        .then((url) => {
+            return res.status(200).json({
+                success: true,
+                message: 'Cập nhật ảnh thành công!',
+                url: imageUrl,
+            });
+        })
+        .catch((err) => {
+            console.error('❌ Upload avatar lỗi:', err);
+            return res.status(500).json({
+                success: false,
+                message: 'Đã có lỗi xảy ra khi upload avatar',
+            });
+        });
+    }
+
+    // [PATCH] /user/change-password
+    changePassword(req, res, next) {
+        const user = req.user;
+        const {currentPassword, newPassword, confirmPassword} = req.body;
+
+        User.findById(user.id)
+            .then((user) => {
+                return bcrypt.compare(currentPassword, user.password)
+                    .then((isMatch) => {
+                        if (!isMatch) {
+                            return res.status(400).json({
+                                success: false, 
+                                message: 'Mật khẩu cũ không đúng, vui lòng kiểm tra lại!',
+                            });
+                        };
+
+                        return bcrypt.hash(newPassword, saltRounds)
+                            .then((hashedPassword) => {
+                                user.password = hashedPassword;
+                                user.save();
+                            })
+                            .then(() => {
+                                res.status(200).json({
+                                    success: true,
+                                    message: 'Đổi mật khẩu thành công!',
+                                });
+                            });
+                    })
+            })
+            .catch((err) => {
+                console.log(err);
+                res.status(500).json({
+                    message: 'Lỗi phía server',
+                    error: err.message,
+                });
+            });
     };
-
 }
 
 

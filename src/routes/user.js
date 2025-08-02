@@ -25,5 +25,6 @@ router.patch('/address/:id/default', authMiddleware, userController.setDefaultAd
 
 router.post('/upload-avatar', authMiddleware ,upload.single('avatar'), userController.uploadAvatar);
 
+router.patch('/change-password', authMiddleware, userController.changePassword);
 module.exports = router;
 

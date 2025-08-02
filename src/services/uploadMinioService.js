@@ -21,7 +21,8 @@ async function uploadToMinio(localFilePath, fileNameInMinio) {
 
 // Lấy URL công khai từ MinIO
 function getPublicUrl(fileName) {
-  return `http://${process.env.MINIO_ENDPOINT}:${process.env.MINIO_PORT}/${bucket}/${fileName}`;
+  const bucket = process.env.MINIO_BUCKET;
+  return `${process.env.MINIO_PUBLIC_URL}/${bucket}/${fileName}`;
 }
 
 // Xóa object khỏi MinIO

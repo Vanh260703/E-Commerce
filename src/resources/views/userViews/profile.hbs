@@ -260,6 +260,25 @@
             box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
         }
 
+        /* Thêm vào phần style */
+        .input-wrapper {
+            position: relative;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #666;
+            transition: color 0.3s;
+        }
+
+        .password-toggle:hover {
+            color: var(--primary-color);
+        }
+
         @media (max-width: 768px) {
             .profile-container {
                 flex-direction: column;
@@ -451,6 +470,70 @@
             display: inline-flex;
             margin: 0 auto;
         }
+
+        /* Thêm CSS cho modal xem ảnh */
+        .avatar-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1100;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .avatar-modal img {
+            max-width: 90%;
+            max-height: 90vh;
+            border-radius: 8px;
+            animation: zoomIn 0.3s ease;
+        }
+
+        .avatar-modal .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: white;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            opacity: 0.8;
+            transition: opacity 0.3s;
+        }
+
+        .avatar-modal .close-btn:hover {
+            opacity: 1;
+        }
+
+        @keyframes zoomIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .password-form-container {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 20px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .password-helper {
+            font-size: 13px;
+            color: #666;
+            margin-top: 5px;
+        }
     </style>
 </head>
 <body>
@@ -480,7 +563,7 @@
         <!-- Sidebar -->
         <div class="profile-sidebar">
             <div class="profile-avatar">
-                <img src="{{userData.avatar}}" alt="Avatar" id="userAvatar">
+                <img src="{{userData.avatar.url}}" alt="Avatar" id="userAvatar">
                 <div class="avatar-upload">
                     <i class="fas fa-camera"></i> Cập nhật ảnh
                 </div>
@@ -506,6 +589,11 @@
                 <li>
                     <a href="#address" onclick="loadContent('address')">
                         <i class="fas fa-address-book"></i> Sổ địa chỉ
+                    </a>
+                </li>
+                <li>
+                    <a href="#password" onclick="loadContent('password')">
+                        <i class="fas fa-key"></i> Đổi mật khẩu
                     </a>
                 </li>
                 <li>
@@ -605,6 +693,41 @@
                             </div>
                         </div>
                         {{/each}}
+                    </div>
+                </div>
+                <!-- Change password content -->
+                <div id="passwordContent" style="display: none;">
+                    <div class="section-title">
+                        Đổi mật khẩu
+                    </div>
+                    <div class="password-form-container">
+                        <form id="changePasswordForm">
+                            <div class="form-group">
+                                <label>Mật khẩu hiện tại</label>
+                                <div class="input-wrapper">
+                                    <input type="password" class="form-control" name="currentPassword" id="currentPassword" required>
+                                    <i class="fas fa-eye password-toggle" onclick="togglePassword('currentPassword')"></i>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Mật khẩu mới</label>
+                                <div class="input-wrapper">
+                                    <input type="password" class="form-control" name="newPassword" id="newPassword" required>
+                                    <i class="fas fa-eye password-toggle" onclick="togglePassword('newPassword')"></i>
+                                </div>
+                                <div class="password-helper">Mật khẩu phải có ít nhất 6 ký tự</div>
+                            </div>
+                            <div class="form-group">
+                                <label>Xác nhận mật khẩu mới</label>
+                                <div class="input-wrapper">
+                                    <input type="password" class="form-control" name="confirmNewPassword" id="confirmNewPassword" required>
+                                    <i class="fas fa-eye password-toggle" onclick="togglePassword('confirmNewPassword')"></i>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn-edit">
+                                <i class="fas fa-save"></i> Đổi mật khẩu
+                            </button>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -717,6 +840,53 @@
             </form>
         </div>
     </div>
+
+    <!-- Thêm modal xem ảnh vào cuối body -->
+    <div class="avatar-modal" id="avatarModal">
+        <button class="close-btn" onclick="closeAvatarModal()">
+            <i class="fas fa-times"></i>
+        </button>
+        <img id="avatarModalImg" src="" alt="Avatar">
+    </div>
+
+    <!-- Change password modal -->
+    <div class="modal" id="changePasswordModal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeChangePasswordModal()">
+                <i class="fas fa-times"></i>
+            </button>
+            <h2 style="margin-bottom: 20px;">Đổi mật khẩu</h2>
+            <form id="changePasswordForm">
+                <div class="form-group">
+                    <label>Mật khẩu hiện tại</label>
+                    <div class="input-wrapper">
+                        <input type="password" class="form-control" name="currentPassword" id="currentPassword" required>
+                        <i class="fas fa-eye password-toggle" onclick="togglePassword('currentPassword')"></i>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Mật khẩu mới</label>
+                    <div class="input-wrapper">
+                        <input type="password" class="form-control" name="newPassword" id="newPassword" required>
+                        <i class="fas fa-eye password-toggle" onclick="togglePassword('newPassword')"></i>
+                    </div>
+                    <div class="input-helper">Mật khẩu phải có ít nhất 6 ký tự</div>
+                </div>
+                <div class="form-group">
+                    <label>Xác nhận mật khẩu mới</label>
+                    <div class="input-wrapper">
+                        <input type="password" class="form-control" name="confirmNewPassword" id="confirmNewPassword" required>
+                        <i class="fas fa-eye password-toggle" onclick="togglePassword('confirmNewPassword')"></i>
+                    </div>
+                </div>
+                <button type="submit" class="btn-edit" style="width: 100%;">
+                    <i class="fas fa-save"></i> Đổi mật khẩu
+                </button>
+            </form>
+        </div>
+    </div>
+
+
 <script>
 
     document.addEventListener('DOMContentLoaded', () => {
@@ -769,9 +939,11 @@
         // Hide all content sections
         const profileContent = document.querySelector('#profileContent');
         const addressContent = document.querySelector('#addressContent');
+        const passwordContent = document.querySelector('#passwordContent');
         
         profileContent.style.display = 'none';
         addressContent.style.display = 'none';
+        passwordContent.style.display = 'none';
         
         // Show selected section
         switch(section) {
@@ -780,12 +952,12 @@
                 break;
             case 'address':
                 addressContent.style.display = 'block';
-                // Kiểm tra xem đã có sẵn địa chỉ chưa
-                const existingAddresses = addressContent.querySelector('.address-list').children.length;
-                // Chỉ load addresses nếu chưa có data
-                if (existingAddresses === 0) {
+                if (addressContent.querySelector('.address-list').children.length === 0) {
                     loadAddresses();
                 }
+                break;
+            case 'password':
+                passwordContent.style.display = 'block';
                 break;
         }
     }
@@ -1286,38 +1458,62 @@ document.getElementById('editAddressForm').addEventListener('submit', async func
     }
   });
 
-  // Xử lý upload avatar
-  document.querySelector('.profile-avatar').addEventListener('click', () => {
+  // Tách riêng xử lý click avatar và upload
+  document.querySelector('.profile-avatar img').addEventListener('click', function() {
+    const avatarModal = document.getElementById('avatarModal');
+    const modalImg = document.getElementById('avatarModalImg');
+    modalImg.src = this.src;
+    avatarModal.style.display = 'flex';
+});
+
+function closeAvatarModal() {
+    document.getElementById('avatarModal').style.display = 'none';
+}
+
+// Xử lý upload khi click vào nút cập nhật
+document.querySelector('.avatar-upload').addEventListener('click', (e) => {
+    e.stopPropagation(); // Ngăn event bubbling lên img
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = 'image/*';
+    
     input.onchange = async function(e) {
-      const file = e.target.files[0];
-      if (!file) return;
+        const file = e.target.files[0];
+        if (!file) return;
 
-      const formData = new FormData();
-      formData.append('avatar', file);
+        const formData = new FormData();
+        formData.append('avatar', file);
 
-      try {
-        const res = await fetch('/user/profile/avatar', {
-          method: 'POST',
-          body: formData
-        });
-        const data = await res.json();
-        if (data.success) {
-          document.getElementById('userAvatar').src = data.avatarUrl;
-          showAlert('success', 'Cập nhật ảnh đại diện thành công!');
-        } else {
-          showAlert('error', data.message);
+        try {
+            const res = await fetch('/user/upload-avatar', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await res.json();
+            
+            if (data.success) {
+                document.getElementById('userAvatar').src = data.url;
+                // Cập nhật luôn ảnh trong modal nếu đang mở
+                document.getElementById('avatarModalImg').src = data.url;
+                showAlert('success', 'Cập nhật ảnh đại diện thành công!');
+            } else {
+                showAlert('error', data.message);
+            }
+        } catch (err) {
+            console.error(err);
+            showAlert('error', 'Có lỗi xảy ra khi tải ảnh');
         }
-      } catch (err) {
-        console.error(err);
-        showAlert('error', 'Có lỗi xảy ra khi tải ảnh');
-      }
     };
+    
     input.click();
-  });
+});
 
+// Thêm xử lý đóng modal khi click bên ngoài ảnh
+document.getElementById('avatarModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeAvatarModal();
+    }
+});
   // Đăng xuất
   async function logout() {
     try {
@@ -1332,7 +1528,100 @@ document.getElementById('editAddressForm').addEventListener('submit', async func
       window.location.href = '/auth/login';
     }
   }
-</script>
+
+  // Mở / đóng modal xem ảnh
+  function openAvatarModal(imageUrl) {
+    const modal = document.getElementById('avatarModal');
+    const avatarPreview = document.getElementById('avatarPreview');
+    avatarPreview.src = imageUrl;
+    modal.style.display = 'flex';
+  }
+
+  function closeAvatarModal() {
+    document.getElementById('avatarModal').style.display = 'none';
+  }
+
+
+function openChangePasswordModal() {
+    document.getElementById('changePasswordModal').style.display = 'flex';
+}
+
+function closeChangePasswordModal() {
+    document.getElementById('changePasswordModal').style.display = 'none';
+    document.getElementById('changePasswordForm').reset();
+}
+
+function togglePassword(inputId) {
+    const input = document.getElementById(inputId);
+    const icon = input.nextElementSibling;
+    
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+    } else {
+        input.type = 'password';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+    }
+}
+
+document.getElementById('changePasswordForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const submitBtn = this.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+    
+    try {
+        const formData = new FormData(this);
+        const data = Object.fromEntries(formData.entries());
+        
+        // Validate password
+        if (data.newPassword.length < 6) {
+            showAlert('error', 'Mật khẩu mới phải có ít nhất 6 ký tự');
+            return;
+        }
+        
+        if (data.newPassword !== data.confirmNewPassword) {
+            showAlert('error', 'Xác nhận mật khẩu không khớp');
+            return;
+        }
+
+        if (data.currentPassword == data.newPassword) {
+            showAlert('error', 'Không được dùng lại mật khẩu cũ!')
+            return;
+        }
+
+        const res = await fetch('/user/change-password', {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        });
+
+        const result = await res.json();
+        
+        if (result.success) {
+            showAlert('success', 'Đổi mật khẩu thành công!');
+            closeChangePasswordModal();
+            this.reset();
+            
+            // Optional: Logout user after password change
+            setTimeout(() => {
+                logout();
+            }, 2000);
+        } else {
+            showAlert('error', result.message || 'Đổi mật khẩu thất bại!');
+        }
+    } catch (err) {
+        console.error('Error:', err);
+        showAlert('error', 'Có lỗi xảy ra khi đổi mật khẩu');
+    } finally {
+        submitBtn.disabled = false;
+    }
+});
+  </script>
 
 </body>
 </html>
