@@ -1,0 +1,17 @@
+<h3>{{title}}</h3>
+
+<div class="table-responsive">
+  <form action="querydr" method="POST">
+    <div class="form-group">
+      <label>Mã giao dịch (vnp_TxnRef)</label>
+      <input class="form-control" name="orderId" placeholder="txnRef" />
+    </div>
+
+    <div class="form-group">
+      <label>Thời gian tạo giao dịch (vnp_TransactionDate)</label>
+      <input class="form-control" name="transDate" placeholder="yyyyMMddHHmmss" />
+    </div>
+
+    <button class="btn btn-default" type="submit">QueryDr</button>
+  </form>
+</div>

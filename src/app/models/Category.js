@@ -4,6 +4,7 @@ const CategorySchema = new mongoose.Schema(
     {
         name: {type: String, required: true},
         description: String,
+        slug: {type: String, required: true},
     }
 );
 

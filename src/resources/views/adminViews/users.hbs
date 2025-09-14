@@ -1,0 +1,637 @@
+{{#> admin-layout title="Quản lý người dùng" isUsers=true}}
+
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <!-- Header Section -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-users me-2"></i>Danh sách người dùng
+                    </h5>
+                    <div class="d-flex gap-2">
+                        <form method="GET" class="d-flex gap-2" id="filterForm">
+                            <div class="input-group" style="width: 300px;">
+                                <span class="input-group-text"><i class="fas fa-search"></i></span>
+                                <input type="text" class="form-control" name="search" 
+                                       placeholder="Tìm kiếm người dùng..." value="{{search}}">
+                            </div>
+                            <select class="form-select" name="role" style="width: 150px;">
+                                <option value="">Tất cả vai trò</option>
+                                <option value="user" {{#if (eq role 'user')}}selected{{/if}}>Người dùng</option>
+                                <option value="admin" {{#if (eq role 'admin')}}selected{{/if}}>Quản trị viên</option>
+                            </select>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Statistics Cards -->
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="card bg-primary text-white">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h4 class="mb-0">{{totalUsers}}</h4>
+                                        <small>Tổng người dùng</small>
+                                    </div>
+                                    <i class="fas fa-users fa-2x opacity-75"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-success text-white">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h4 class="mb-0">{{activeUsers}}</h4>
+                                        <small>Đã xác thực</small>
+                                    </div>
+                                    <i class="fas fa-user-check fa-2x opacity-75"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-warning text-white">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h4 class="mb-0">{{adminUsers}}</h4>
+                                        <small>Quản trị viên</small>
+                                    </div>
+                                    <i class="fas fa-user-shield fa-2x opacity-75"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-info text-white">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h4 class="mb-0">{{newUsersThisMonth}}</h4>
+                                        <small>Mới tháng này</small>
+                                    </div>
+                                    <i class="fas fa-user-plus fa-2x opacity-75"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Users Table -->
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Avatar</th>
+                                <th>Thông tin người dùng</th>
+                                <th>Email & Điện thoại</th>
+                                <th>Vai trò</th>
+                                <th>Trạng thái</th>
+                                <th>Ngày tham gia</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{#each users}}
+                            <tr data-user-id="{{this._id}}">
+                                <td>
+                                    {{#if this.avatar}}
+                                        <img src="{{this.avatar.url}}" alt="{{this.name}}" 
+                                             class="rounded-circle" width="50" height="50" style="object-fit: cover;">
+                                    {{else}}
+                                        <div class="bg-secondary rounded-circle d-flex align-items-center justify-content-center text-white" 
+                                             style="width: 50px; height: 50px;">
+                                            <i class="fas fa-user"></i>
+                                        </div>
+                                    {{/if}}
+                                </td>
+                                <td>
+                                    <div>
+                                        <strong>{{this.name}}</strong>
+                                        <br>
+                                        <small class="text-muted">@{{this.username}}</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div>
+                                        <div><i class="fas fa-envelope text-muted me-1"></i> {{this.email}}</div>
+                                        {{#if this.phone}}
+                                            <div><i class="fas fa-phone text-muted me-1"></i> {{this.phone}}</div>
+                                        {{/if}}
+                                    </div>
+                                </td>
+                                <td>
+                                    {{#if (eq this.role 'admin')}}
+                                        <span class="badge bg-danger">
+                                            <i class="fas fa-crown me-1"></i>Quản trị viên
+                                        </span>
+                                    {{else}}
+                                        <span class="badge bg-info">
+                                            <i class="fas fa-user me-1"></i>Người dùng
+                                        </span>
+                                    {{/if}}
+                                </td>
+                                <td>
+                                    {{#if this.isVerified}}
+                                        <span class="badge bg-success">
+                                            <i class="fas fa-check-circle me-1"></i>Đã xác thực
+                                        </span>
+                                    {{else}}
+                                        <span class="badge bg-secondary">
+                                            <i class="fas ban me-1"></i>Chưa xác thực
+                                        </span>
+                                    {{/if}}
+                                </td>
+                                <td>
+                                    <small>{{formatDate this.createdAt}}</small>
+                                </td>
+                                <td>
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" 
+                                                type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                            <i class="fas fa-cog"></i>
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            <li>
+                                                <a class="dropdown-item" href="#" onclick="viewUser('{{this._id}}')">
+                                                    <i class="fas fa-eye me-2"></i>Xem chi tiết
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item" href="#" onclick="editUser('{{this._id}}')">
+                                                    <i class="fas fa-edit me-2"></i>Chỉnh sửa
+                                                </a>
+                                            </li>
+                                            {{#unless (eq this.role 'admin')}}
+                                            <li>
+                                                <a class="dropdown-item" href="#" onclick="changeRole('{{this._id}}')">
+                                                    <i class="fas fa-user-shield me-2"></i>Cấp quyền Admin
+                                                </a>
+                                            </li>
+                                            {{/unless}}
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li>
+                                                <a class="dropdown-item text-danger" href="#" 
+                                                   onclick="confirmDelete('/admin/users/{{this._id}}', '{{this.name}}')">
+                                                    <i class="fas fa-trash me-2"></i>Xóa người dùng
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </td>
+                            </tr>
+                            {{else}}
+                            <tr>
+                                <td colspan="7" class="text-center py-4">
+                                    <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                                    <p class="text-muted">Không tìm thấy người dùng nào</p>
+                                </td>
+                            </tr>
+                            {{/each}}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                {{#if (gt totalPages 1)}}
+                <nav aria-label="User pagination" class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item {{#unless hasPrevPage}}disabled{{/unless}}">
+                            <a class="page-link" href="?page={{prevPage}}&search={{search}}&role={{role}}" 
+                               {{#unless hasPrevPage}}tabindex="-1" aria-disabled="true"{{/unless}}>
+                                <i class="fas fa-chevron-left"></i> Trước
+                            </a>
+                        </li>
+                        
+                        {{#each pages}}
+                        <li class="page-item {{#if this.isCurrent}}active{{/if}}">
+                            <a class="page-link" href="?page={{this.page}}&search={{../search}}&role={{../role}}"
+                               {{#if this.isCurrent}}aria-current="page"{{/if}}>
+                                {{this.page}}
+                            </a>
+                        </li>
+                        {{/each}}
+                        
+                        <li class="page-item {{#unless hasNextPage}}disabled{{/unless}}">
+                            <a class="page-link" href="?page={{nextPage}}&search={{search}}&role={{role}}"
+                               {{#unless hasNextPage}}tabindex="-1" aria-disabled="true"{{/unless}}>
+                                Sau <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+                {{/if}}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- View User Modal -->
+<div class="modal fade" id="viewUserModal" tabindex="-1" aria-labelledby="viewUserModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewUserModalLabel">
+                    <i class="fas fa-user me-2"></i>Thông tin người dùng
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="viewUserBody">
+                <div class="d-flex justify-content-center">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Đang tải...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit User Modal -->
+<div class="modal fade" id="editUserModal" tabindex="-1" aria-labelledby="editUserModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editUserModalLabel">
+                    <i class="fas fa-edit me-2"></i>Chỉnh sửa người dùng
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="editUserForm">
+                <div class="modal-body" id="editUserBody">
+                    <div class="d-flex justify-content-center">
+                        <div class="spinner-border" role="status">
+                            <span class="visually-hidden">Đang tải...</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i>Hủy
+                    </button>
+                    <button type="submit" class="btn btn-warning">
+                        <i class="fas fa-save me-1"></i>Cập nhật
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-submit form on input changes with debounce
+    const searchInput = document.querySelector('input[name="search"]');
+    const roleSelect = document.querySelector('select[name="role"]');
+    let searchTimeout;
+
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                submitFilterForm();
+            }, 500); // 500ms debounce
+        });
+    }
+
+    if (roleSelect) {
+        roleSelect.addEventListener('change', submitFilterForm);
+    }
+
+    function submitFilterForm() {
+        const form = document.getElementById('filterForm');
+        const formData = new FormData(form);
+        const params = new URLSearchParams(formData);
+        params.set('page', '1'); // Reset to first page on filter change
+        window.location.href = `${window.location.pathname}?${params.toString()}`;
+    }
+});
+
+// View User Details
+async function viewUser(userId) {
+    const modal = new bootstrap.Modal(document.getElementById('viewUserModal'));
+    const modalBody = document.getElementById('viewUserBody');
+    
+    // Show loading spinner
+    modalBody.innerHTML = `
+        <div class="d-flex justify-content-center">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Đang tải...</span>
+            </div>
+        </div>
+    `;
+    
+    modal.show();
+    
+    try {
+        const response = await fetch(`/admin/users/${userId}`);
+        const data = await response.json();
+        
+        if (data.success || data.succes) {
+            modalBody.innerHTML = buildUserDetailsHTML(data.user);
+        } else {
+            modalBody.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    ${data.message || 'Không thể tải thông tin người dùng'}
+                </div>
+            `;
+        }
+    } catch (error) {
+        console.error('Error fetching user details:', error);
+        modalBody.innerHTML = `
+            <div class="alert alert-danger">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                Có lỗi xảy ra khi tải thông tin người dùng
+            </div>
+        `;
+    }
+}
+
+// Edit User
+async function editUser(userId) {
+    const modal = new bootstrap.Modal(document.getElementById('editUserModal'));
+    const modalBody = document.getElementById('editUserBody');
+    
+    // Show loading spinner
+    modalBody.innerHTML = `
+        <div class="d-flex justify-content-center">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Đang tải...</span>
+            </div>
+        </div>
+    `;
+    
+    modal.show();
+    
+    try {
+        const response = await fetch(`/admin/users/${userId}`);
+        const data = await response.json();
+        
+        if (data.success || data.succes) {
+            modalBody.innerHTML = buildEditUserFormHTML(data.user);
+        } else {
+            modalBody.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    ${data.message || 'Không thể tải thông tin người dùng'}
+                </div>
+            `;
+        }
+    } catch (error) {
+        console.error('Error fetching user details:', error);
+        modalBody.innerHTML = `
+            <div class="alert alert-danger">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                Có lỗi xảy ra khi tải thông tin người dùng
+            </div>
+        `;
+    }
+}
+
+// Build User Details HTML
+function buildUserDetailsHTML(user) {
+    const genderMap = { male: "Nam", female: "Nữ", other: "Khác" };
+    const genderText = genderMap[user.gender] || "Chưa cập nhật";
+    
+    return `
+        <div class="row">
+            <div class="col-md-4 text-center">
+                ${user.avatar ? 
+                    `<img src="${user.avatar.url}" alt="${user.name}" class="rounded-circle mb-3" width="120" height="120" style="object-fit: cover;">` :
+                    `<div class="bg-secondary rounded-circle d-flex align-items-center justify-content-center text-white mx-auto mb-3" style="width: 120px; height: 120px;">
+                        <i class="fas fa-user fa-3x"></i>
+                    </div>`
+                }
+                <h5>${user.name}</h5>
+                <p class="text-muted">@${user.username}</p>
+                <div class="mb-2">
+                    ${user.role === 'admin' ? 
+                        '<span class="badge bg-danger"><i class="fas fa-crown me-1"></i>Quản trị viên</span>' :
+                        '<span class="badge bg-info"><i class="fas fa-user me-1"></i>Người dùng</span>'
+                    }
+                </div>
+                <div>
+                    ${user.isVerified ? 
+                        '<span class="badge bg-success"><i class="fas fa-check-circle me-1"></i>Đã xác thực</span>' :
+                        '<span class="badge bg-secondary"><i class="fas fa-ban me-1"></i>Chưa xác thực</span>'
+                    }
+                </div>
+            </div>
+            <div class="col-md-8">
+                <table class="table table-borderless">
+                    <tr>
+                        <td><strong>Email:</strong></td>
+                        <td>${user.email}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Điện thoại:</strong></td>
+                        <td>${user.phone || 'Chưa cập nhật'}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Địa chỉ:</strong></td>
+                        <td>${user.defaultAddress || user.address || 'Chưa cập nhật'}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Ngày sinh:</strong></td>
+                        <td>${user.dateOfBirth ? formatDate(user.dateOfBirth) : 'Chưa cập nhật'}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Giới tính:</strong></td>
+                        <td>${genderText}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Ngày tham gia:</strong></td>
+                        <td>${formatDate(user.createdAt)}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Cập nhật lần cuối:</strong></td>
+                        <td>${formatDate(user.updatedAt)}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    `;
+}
+
+// Build Edit User Form HTML
+function buildEditUserFormHTML(user) {
+    return `
+        <input type="hidden" name="userId" value="${user._id}">
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Họ và tên <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" name="name" value="${user.name}" required>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Tên đăng nhập <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" name="username" value="${user.username}" required>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Email <span class="text-danger">*</span></label>
+                <input type="email" class="form-control" name="email" value="${user.email}" required>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Điện thoại</label>
+                <input type="tel" class="form-control" name="phone" value="${user.phone || ''}">
+            </div>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Địa chỉ</label>
+            <textarea class="form-control" name="address" rows="2">${user.address || ''}</textarea>
+        </div>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Ngày sinh</label>
+                <input type="date" class="form-control" name="dateOfBirth" 
+                       value="${user.dateOfBirth ? user.dateOfBirth.split('T')[0] : ''}">
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Giới tính</label>
+                <select class="form-select" name="gender">
+                    <option value="">Chọn giới tính</option>
+                    <option value="male" ${user.gender === 'male' ? 'selected' : ''}>Nam</option>
+                    <option value="female" ${user.gender === 'female' ? 'selected' : ''}>Nữ</option>
+                    <option value="other" ${user.gender === 'other' ? 'selected' : ''}>Khác</option>
+                </select>
+            </div>
+        </div>
+        <div class="mb-3">
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="isActive" ${user.isActive ? 'checked' : ''}>
+                <label class="form-check-label">Tài khoản hoạt động</label>
+            </div>
+        </div>
+    `;
+}
+
+// Edit User Form Submit
+document.getElementById('editUserForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    const originalBtnContent = submitBtn.innerHTML;
+    
+    // Show loading state
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Đang cập nhật...';
+    
+    const formData = new FormData(e.target);
+    const data = Object.fromEntries(formData.entries());
+    const userId = data.userId;
+    
+    // Convert checkbox to boolean
+    data.isActive = formData.has('isActive');
+    delete data.userId;
+    
+    try {
+        const response = await fetch(`/admin/users/${userId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success || result.succes) {
+            showToast('success', result.message || 'Cập nhật người dùng thành công!');
+            bootstrap.Modal.getInstance(document.getElementById('editUserModal')).hide();
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            showToast('error', result.message);
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalBtnContent;
+        }
+    } catch (error) {
+        console.error('Error updating user:', error);
+        showToast('error', 'Có lỗi xảy ra khi cập nhật người dùng!');
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalBtnContent;
+    }
+});
+
+// Change Role to Admin
+async function changeRole(userId) {
+    const result = await Swal.fire({
+        title: 'Cấp quyền Quản trị viên?',
+        text: 'Bạn có chắc chắn muốn cấp quyền quản trị viên cho người dùng này?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#ffc107',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Cấp quyền',
+        cancelButtonText: 'Hủy',
+        showLoaderOnConfirm: true,
+        preConfirm: async () => {
+            try {
+                const response = await fetch(`/admin/users/${userId}/change-role`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                return await response.json();
+            } catch (error) {
+                Swal.showValidationMessage('Có lỗi xảy ra khi cập nhật quyền!');
+            }
+        }
+    });
+
+    if (result.isConfirmed) {
+        const data = result.value;
+        if (data.success || data.succes) {
+            showToast('success', data.message);
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            showToast('error', data.message);
+        }
+    }
+}
+
+// Pagination click (delegation)
+document.addEventListener('click', function (e) {
+    const target = e.target.closest('.pagination .page-link');
+    if (!target) return;
+
+    e.preventDefault();
+    const url = new URL(target.href);
+
+    // Lấy current search & role từ form
+    const form = document.getElementById('filterForm');
+    const formData = new FormData(form);
+    const params = new URLSearchParams(formData);
+
+    // Ghi đè page từ nút bấm
+    const newPage = url.searchParams.get('page');
+    if (newPage) {
+        params.set('page', newPage);
+    }
+
+    // Giữ lại role & search nếu có
+    const role = url.searchParams.get('role');
+    const search = url.searchParams.get('search');
+    if (role) params.set('role', role);
+    if (search) params.set('search', search);
+
+    // Redirect
+    window.location.href = `${window.location.pathname}?${params.toString()}`;
+});
+
+
+// Helper function to format date
+function formatDate(dateString) {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('vi-VN', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+    });
+}
+</script>
+
+{{/admin-layout}}

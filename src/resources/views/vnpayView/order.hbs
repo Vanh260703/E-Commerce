@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{title}}</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .payment-container {
+            max-width: 600px;
+            width: 100%;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .payment-header {
+            background: linear-gradient(45deg, #1976d2, #1565c0);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .payment-header h3 {
+            font-size: 2em;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .payment-header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+
+        .payment-content {
+            padding: 40px;
+        }
+
+        .form-group {
+            margin-bottom: 30px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 12px;
+            font-size: 1.1em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .amount-display {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border: 2px solid #dee2e6;
+            border-radius: 12px;
+            padding: 18px 20px;
+            font-size: 1.4em;
+            font-weight: 700;
+            color: #1976d2;
+            text-align: center;
+            position: relative;
+            cursor: not-allowed;
+        }
+
+        .amount-display::before {
+            content: '🔒';
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.2em;
+        }
+
+        .payment-methods {
+            display: grid;
+            gap: 12px;
+        }
+
+        .payment-option {
+            position: relative;
+            border: 2px solid #e3f2fd;
+            border-radius: 12px;
+            padding: 18px 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: white;
+            overflow: hidden;
+        }
+
+        .payment-option::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(25, 118, 210, 0.1), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .payment-option:hover {
+            border-color: #1976d2;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(25, 118, 210, 0.15);
+        }
+
+        .payment-option:hover::before {
+            left: 100%;
+        }
+
+        .payment-option.selected {
+            border-color: #1976d2;
+            background: linear-gradient(135deg, #e3f2fd 0%, #ffffff 100%);
+            box-shadow: 0 4px 20px rgba(25, 118, 210, 0.2);
+        }
+
+        .payment-option input[type="radio"] {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            transform: scale(1.3);
+            accent-color: #1976d2;
+        }
+
+        .option-content {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding-right: 40px;
+        }
+
+        .option-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .icon-qr { background: linear-gradient(135deg, #1976d2, #1565c0); }
+        .icon-app { background: linear-gradient(135deg, #00bcd4, #0097a7); }
+        .icon-atm { background: linear-gradient(135deg, #4caf50, #388e3c); }
+        .icon-card { background: linear-gradient(135deg, #ff9800, #f57c00); }
+
+        .option-text {
+            flex: 1;
+        }
+
+        .option-title {
+            font-weight: 600;
+            color: #333;
+            font-size: 1.1em;
+            margin-bottom: 4px;
+        }
+
+        .option-desc {
+            color: #666;
+            font-size: 0.9em;
+            line-height: 1.4;
+        }
+
+        .language-section {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 10px;
+        }
+
+        .language-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .language-options {
+            display: flex;
+            gap: 20px;
+        }
+
+        .language-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            padding: 10px 15px;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            font-weight: 500;
+            background: white;
+            border: 2px solid transparent;
+        }
+
+        .language-option:hover {
+            border-color: #1976d2;
+            background-color: #f3f8ff;
+        }
+
+        .language-option.selected {
+            border-color: #1976d2;
+            background-color: #e3f2fd;
+        }
+
+        .language-option input[type="radio"] {
+            accent-color: #1976d2;
+            transform: scale(1.2);
+        }
+
+        .flag {
+            font-size: 1.2em;
+        }
+
+        .submit-btn {
+            width: 100%;
+            background: linear-gradient(45deg, #1976d2, #1565c0);
+            color: white;
+            border: none;
+            padding: 18px 30px;
+            border-radius: 12px;
+            font-size: 1.2em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(25, 118, 210, 0.3);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .hidden-input {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .payment-content {
+                padding: 30px 20px;
+            }
+            
+            .language-options {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .option-content {
+                flex-direction: column;
+                text-align: center;
+                gap: 12px;
+                padding-right: 20px;
+            }
+            
+            .payment-option input[type="radio"] {
+                top: 10px;
+                right: 10px;
+            }
+        }
+
+        .amount-label {
+            background: linear-gradient(45deg, #4caf50, #45a049);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 0.9em;
+            margin-left: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="payment-container">
+        <div class="payment-header">
+            <h3>
+                <i class="fab fa-cc-visa"></i>
+                {{title}}
+            </h3>
+            <p>Chọn phương thức thanh toán phù hợp</p>
+        </div>
+
+        <div class="payment-content">
+            <form id="createOrder">
+                <!-- Số tiền (không thể chỉnh sửa) -->
+                <div class="form-group">
+                    <label>
+                        <i class="fas fa-money-bill-wave"></i>
+                        Số tiền thanh toán
+                        <span class="amount-label">Đã được xác định</span>
+                    </label>
+                    <div class="amount-display">
+                        {{amount}} VNĐ
+                    </div>
+                    <!-- Hidden input để gửi amount, orderId -->
+                    <input type="hidden" name="amount" value="{{amount}}" />
+                    <input type="hidden" name="orderId" value="{{orderId}}" />
+
+                </div>
+
+                <!-- Phương thức thanh toán -->
+                <div class="form-group">
+                    <label>
+                        <i class="fas fa-credit-card"></i>
+                        Chọn phương thức thanh toán:
+                    </label>
+                    
+                    <div class="payment-methods">
+                        <div class="payment-option" onclick="selectPaymentMethod('VNPAYQR', this)">
+                            <input type="radio" name="bankCode" id="defaultPaymentMethod" value="" checked>
+                            <div class="option-content">
+                                <div class="option-icon icon-qr">
+                                    <i class="fas fa-qrcode"></i>
+                                </div>
+                                <div class="option-text">
+                                    <div class="option-title">Cổng thanh toán VNPAYQR</div>
+                                    <div class="option-desc">Quét mã QR để thanh toán nhanh chóng và bảo mật</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="payment-option" onclick="selectPaymentMethod('VNPAYQR', this)">
+                            <input type="radio" name="bankCode" id="vnpayqrPaymentMethod" value="VNPAYQR">
+                            <div class="option-content">
+                                <div class="option-icon icon-app">
+                                    <i class="fas fa-mobile-alt"></i>
+                                </div>
+                                <div class="option-text">
+                                    <div class="option-title">Ứng dụng hỗ trợ VNPAYQR</div>
+                                    <div class="option-desc">Thanh toán qua ứng dụng ngân hàng trên điện thoại</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="payment-option" onclick="selectPaymentMethod('VNBANK', this)">
+                            <input type="radio" name="bankCode" id="vnbankPaymentMethod" value="VNBANK">
+                            <div class="option-content">
+                                <div class="option-icon icon-atm">
+                                    <i class="fas fa-university"></i>
+                                </div>
+                                <div class="option-text">
+                                    <div class="option-title">ATM - Tài khoản ngân hàng nội địa</div>
+                                    <div class="option-desc">Thanh toán qua thẻ ATM các ngân hàng Việt Nam</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="payment-option" onclick="selectPaymentMethod('INTCARD', this)">
+                            <input type="radio" name="bankCode" id="intcardPaymentMethod" value="INTCARD">
+                            <div class="option-content">
+                                <div class="option-icon icon-card">
+                                    <i class="fas fa-credit-card"></i>
+                                </div>
+                                <div class="option-text">
+                                    <div class="option-title">Thẻ quốc tế</div>
+                                    <div class="option-desc">Visa, Mastercard, JCB, American Express</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Ngôn ngữ -->
+                <div class="form-group">
+                    <div class="language-section">
+                        <div class="language-title">
+                            <i class="fas fa-language"></i>
+                            Ngôn ngữ giao diện thanh toán:
+                        </div>
+                        
+                        <div class="language-options">
+                            <div class="language-option selected" onclick="selectLanguage('vn', this)">
+                                <input type="radio" name="language" id="vnLanguage" value="vn" checked>
+                                <span class="flag">🇻🇳</span>
+                                <span>Tiếng Việt</span>
+                            </div>
+                            
+                            <div class="language-option" onclick="selectLanguage('en', this)">
+                                <input type="radio" name="language" id="enLanguage" value="en">
+                                <span class="flag">🇺🇸</span>
+                                <span>Tiếng Anh</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Nút thanh toán -->
+                <button class="submit-btn" id="btnPopup" type="submit">
+                    <i class="fas fa-shield-alt"></i>
+                    Thanh Toán Bảo Mật
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Chọn phương thức thanh toán
+        function selectPaymentMethod(value, element) {
+            // Remove selected class from all options
+            document.querySelectorAll('.payment-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+            
+            // Add selected class to clicked option
+            element.classList.add('selected');
+            
+            // Check the radio button
+            element.querySelector('input[type="radio"]').checked = true;
+        }
+
+        // Chọn ngôn ngữ
+        function selectLanguage(value, element) {
+            // Remove selected class from all language options
+            document.querySelectorAll('.language-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+            
+            // Add selected class to clicked option
+            element.classList.add('selected');
+            
+            // Check the radio button
+            element.querySelector('input[type="radio"]').checked = true;
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set default selections
+            document.querySelector('.payment-option').classList.add('selected');
+            
+            // Add form submission handling
+            document.getElementById('createOrder').addEventListener('submit', function(e) {
+                const submitBtn = document.getElementById('btnPopup');
+                const originalText = submitBtn.innerHTML;
+                
+                // Show loading state
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
+                
+                // Re-enable after 3 seconds (in case of network issues)
+                setTimeout(() => {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalText;
+                }, 3000);
+            });
+
+            // Add hover effects
+            document.querySelectorAll('.payment-option').forEach(option => {
+                option.addEventListener('mouseenter', function() {
+                    if (!this.classList.contains('selected')) {
+                        this.style.transform = 'translateY(-2px)';
+                    }
+                });
+                
+                option.addEventListener('mouseleave', function() {
+                    if (!this.classList.contains('selected')) {
+                        this.style.transform = 'translateY(0)';
+                    }
+                });
+            });
+        });
+
+        document.getElementById('createOrder').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const form = e.target;
+            const formData = {
+                amount: form.amount.value,
+                bankCode: form.bankCode.value,
+                language: form.language.value,
+                orderId: form.orderId.value
+            };
+
+            const response = await fetch('/order/create_payment_url', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData),
+            });
+
+            const result = await response.json();
+            if (result.success) {
+                window.location.href = result.paymentUrl;  // 👉 Redirect thủ công tại FE
+            } else {
+                alert('Lỗi khi tạo thanh toán!');
+            }
+        });
+    </script>
+</body>
+</html>

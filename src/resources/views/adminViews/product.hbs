@@ -1,0 +1,716 @@
+{{#> admin-layout title="Quản lý sản phẩm" isProducts=true}}
+
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-box me-2"></i>Danh sách sản phẩm
+                    </h5>
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addProductModal">
+                        <i class="fas fa-plus me-2"></i>Thêm sản phẩm
+                    </button>
+                </div>
+
+                <!-- Search and Filter -->
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-search"></i></span>
+                            <input type="text" class="form-control" id="searchProduct" placeholder="Tìm kiếm sản phẩm...">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <select class="form-select" id="categoryFilter">
+                            <option value="">Tất cả danh mục</option>
+                            {{#each categories}}
+                                 <option value="{{this.slug}}" {{#if (eq ../slug this.slug)}}selected{{/if}}>{{this.name}}</option>
+                            {{/each}}
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Products Table -->
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr> 
+                                <th>Hình ảnh</th>
+                                <th>Tên sản phẩm</th>
+                                <th>Danh mục</th>
+                                <th>Giá</th>
+                                <th>Trạng thái</th>
+                                <th>Người tạo</th>
+                                <th>Cập nhật gần nhất</th>
+                                <th>Thời gian cập nhật</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="productsTableBody">
+                            {{#each products}}
+                            <tr>
+                                <td>
+                                    {{#if this.imageURL.[0]}}
+                                        <img src="{{this.imageURL.[0].thumbnail}}" alt="{{this.imageURL.[0].alt}}" 
+                                             class="rounded" width="60" height="60" style="object-fit: cover;">
+                                    {{else}}
+                                        <div class="bg-light rounded d-flex align-items-center justify-content-center" 
+                                             style="width: 60px; height: 60px;">
+                                            <i class="fas fa-image text-muted"></i>
+                                        </div>
+                                    {{/if}}
+                                </td>
+                                <td>
+                                    <div>
+                                        <strong>{{this.name}}</strong>
+                                        <br>
+                                        <small class="text-muted">{{this.slug}}</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-info">
+                                        {{#if (eq this.categorySlug 'fresh-fruits')}} Trái cây tươi
+                                        {{else if (eq this.categorySlug 'dried-fruits')}} Trái cây sấy khô
+                                        {{else if (eq this.categorySlug 'imported-fruits')}} Trái cây nhập khẩu
+                                        {{else if (eq this.categorySlug 'organic-fruits')}} Trái cây hữu cơ
+                                        {{else if (eq this.categorySlug 'canned-fruits')}} Trái cây đóng hộp
+                                        {{/if}}
+                                    </span>
+                                </td>
+                                <td>
+                                    <strong class="text-success">{{formatCurrency this.price}}</strong>
+                                </td>
+                                <td>
+                                    {{#if (gt this.stockQuantity 0)}}
+                                        <span class="badge bg-success">Còn hàng</span>
+                                    {{else}}
+                                        <span class="badge bg-secondary">Hết hàng</span>
+                                    {{/if}}
+                                </td>
+                                <td>{{this.createdBy}}</td>
+                                <td>
+                                    {{#if this.updatedBy}}
+                                        {{this.updatedBy}}
+                                    {{else}}
+                                        Chưa có cập nhật nào gần đây. 
+                                    {{/if}}  
+                                </td>
+                                <td>
+                                    {{#if this.updatedAt}}
+                                        {{formatDateHour this.updatedAt}}
+                                    {{else}}
+                                        Chưa có cập nhật nào gần đây. 
+                                    {{/if}}
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <button class="btn btn-sm btn-outline-primary" onclick="viewProduct('{{this.slug}}')">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-warning" onclick="editProduct('{{this.slug}}')">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger" 
+                                                onclick="confirmDelete('/admin/products/{{this.slug}}', '{{this.name}}')">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {{/each}}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item {{#unless hasPrevPage}}disabled{{/unless}}">
+                            <a class="page-link" href="?page={{prevPage}}">Trước</a>
+                        </li>
+                        {{#each pages}}
+                            <li class="page-item {{#if this.isCurrent}}active{{/if}}">
+                                <a class="page-link" href="?page={{this.page}}">{{this.page}}</a>
+                            </li>
+                        {{/each}}
+                        <li class="page-item {{#unless hasNextPage}}disabled{{/unless}}">
+                            <a class="page-link" href="?page={{nextPage}}">Sau</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Product Modal -->
+<div class="modal fade" id="addProductModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-plus me-2"></i>Thêm sản phẩm mới
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="addProductForm" enctype="multipart/form-data">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Tên sản phẩm *</label>
+                            <input type="text" class="form-control" name="name" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Danh mục *</label>
+                            <select class="form-select" name="categorySlug" required>
+                                <option value="">Chọn danh mục</option>
+                                {{#each categories}}
+                                    <option value="{{this.slug}}">{{this.name}}</option>
+                                {{/each}}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Giá *</label>
+                            <input type="number" class="form-control" name="price" min="0" required>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Số lượng *</label>
+                            <input type="number" class="form-control" name="stockQuantity" min="0" required>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Đơn vị *</label>
+                            <input type="text" class="form-control" name="unit" placeholder="kg, hộp, chai..." required>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Khuyến mại</label>
+                        <button type="button" class="btn btn-outline-primary w-100" id="toggleDiscount">
+                            + Thêm khuyến mại
+                        </button>
+
+                        <!-- Form khuyến mại (ẩn mặc định) -->
+                        <div id="discountFields" class="mt-3 d-none">
+                            <div class="mb-2">
+                                <label class="form-label">% Khuyến mại</label>
+                                <input type="number" class="form-control" name="discount" min="0" max="100" value="0">
+                            </div>
+
+                            <div class="mb-2">
+                                <label class="form-label">Thời gian kết thúc</label>
+                                <input type="datetime-local" class="form-control" name="discountExpiry">
+                            </div>
+                            <div class="form-check mt-2">
+                                <input class="form-check-input" type="checkbox" id="noEndDate" name="unlimitDiscount">
+                                <label class="form-check-label" for="noEndDate">Không thời hạn</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Mô tả ngắn</label>
+                        <textarea class="form-control" name="sortDescription" rows="3"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Mô tả chi tiết</label>
+                        <textarea class="form-control" name="description" rows="3"></textarea>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Xuất xứ</label>
+                            <input type="text" class="form-control" name="origin">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Hạn sử dụng</label>
+                            <input type="text" class="form-control" name="expiry">
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Hướng dẫn bảo quản</label>
+                            <input type="text" class="form-control" name="storageInstructions">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Nhiệt độ bảo quản</label>
+                            <input type="text" class="form-control" name="storageTemperature" placeholder="ví dụ: 2-8°C">
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Calories (kcal)</label>
+                            <input type="number" class="form-control" name="calories" min="0">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Các loại vitamin</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="vitamins" value="Vitamin C" id="vitaminC">
+                                <label class="form-check-label" for="vitaminC">Vitamin C</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="vitamins" value="Vitamin B" id="vitaminB">
+                                <label class="form-check-label" for="vitaminB">Vitamin B</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="vitamins" value="Vitamin A" id="vitaminA">
+                                <label class="form-check-label" for="vitaminA">Vitamin A</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="vitamins" value="Vitamin E" id="vitaminE">
+                                <label class="form-check-label" for="vitaminE">Vitamin E</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="vitamins" value="Vitamin K" id="vitaminK">
+                                <label class="form-check-label" for="vitaminK">Vitamin K</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Hình ảnh sản phẩm *</label>
+                        <input type="file" class="form-control" name="img-product" multiple accept="image/*" required>
+                        <div class="form-text">Chọn nhiều hình ảnh (JPG, PNG, GIF)</div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="isFeatured">
+                                <label class="form-check-label">Sản phẩm nổi bật</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>Lưu sản phẩm
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<!-- Edit Product Modal -->
+<div class="modal fade" id="editProductModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-edit me-2"></i>Cập nhật sản phẩm
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="editProductForm" enctype="multipart/form-data">
+                <div class="modal-body" id="editProductBody">
+                    <!-- Content will be loaded dynamically -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-warning">
+                        <i class="fas fa-save me-2"></i>Cập nhật
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- View Product Modal -->
+<div class="modal fade" id="viewProductModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-eye me-2"></i>Chi tiết sản phẩm
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="viewProductBody">
+                <!-- Content will be loaded dynamically -->
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/moment.min.js"></script>
+<script>
+// Add Product Form Submit
+document.getElementById('addProductForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    
+    try {
+        const response = await fetch('/admin/products', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const data = await response.json();
+        
+        if (data.succes || data.success) {
+            showToast('success', data.message);
+            bootstrap.Modal.getInstance(document.getElementById('addProductModal')).hide();
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            showToast('error', data.message);
+        }
+    } catch (error) {
+        console.log(error);
+        showToast('error', 'Có lỗi xảy ra khi thêm sản phẩm!');
+    }
+});
+
+// View Product
+async function viewProduct(slug) {
+    try {
+        const response = await fetch(`/admin/products/${slug}`);
+        const data = await response.json();
+        
+        if (data.success) {
+            const product = data.product;
+            const modalBody = document.getElementById('viewProductBody');
+            
+            modalBody.innerHTML = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <strong>Tên sản phẩm:</strong>
+                            <p>${product.name}</p>
+                        </div>
+                        <div class="mb-3">
+                            <strong>Giá:</strong>
+                            <p class="text-success">${formatCurrency(product.price)}</p>
+                        </div>
+                        <div class="mb-3">
+                            <strong>Trọng lượng:</strong>
+                            <p>${product.unit}</p>
+                        </div>
+                        <div class="mb-3">
+                            <strong>Số lượng:</strong>
+                            <p>${product.stockQuantity || 0}</p>
+                        </div>
+                        <div class="mb-3">
+                            <strong>Số lượng đã bán:</strong>
+                            <p>${product.sold || 0}</p>
+                        </div>
+                        <div class="mb-3">
+                            <strong>Trạng thái:</strong>
+                            <p>
+                            ${product.stockQuantity > 0 ? 
+                                '<span class="badge bg-success">Còn hàng</span>' : 
+                                '<span class="badge bg-danger">Hết hàng</span>'
+                            }
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <strong>Hình ảnh:</strong>
+                            <div class="d-flex flex-wrap gap-2 mt-2">
+                                ${product.imageURL ? product.imageURL.map(img => 
+                                    `<img src="${img.original}" alt="${img.alt}" class="rounded" width="80" height="80" style="object-fit: cover;">`
+                                ).join('') : '<p class="text-muted">Không có hình ảnh</p>'}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <strong>Mô tả:</strong>
+                    <p>${product.description || 'Không có mô tả'}</p>
+                </div>
+            `;
+            
+            new bootstrap.Modal(document.getElementById('viewProductModal')).show();
+        } else {
+            showToast('error', data.message);
+        }
+    } catch (error) {
+        showToast('error', 'Có lỗi xảy ra khi tải thông tin sản phẩm!');
+    }
+}
+
+// Edit Product
+async function editProduct(slug) {
+    try {
+        const response = await fetch(`/admin/products/${slug}`);
+        const data = await response.json();
+        
+        if (data.succes || data.success) {
+            const product = data.product;
+            const modalBody = document.getElementById('editProductBody');
+            const hasVitamin = (vitamin) => Array.isArray(product.nutritionFacts?.vitamins) && product.nutritionFacts.vitamins.includes(vitamin);
+            const formatDateForInput = (date) => {
+                if (!date) return '';
+                return moment(date).format('YYYY-MM-DDTHH:mm');
+            };
+            modalBody.innerHTML = `
+                <input type="hidden" name="slug" value="${product.slug}">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Tên sản phẩm *</label>
+                        <input type="text" class="form-control" name="name" value="${product.name}" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Danh mục *</label>
+                        <select class="form-select" name="categorySlug" required>
+                            {{#each categories}}
+                                <option value="{{this.slug}}" ${product.categorySlug=== '{{this.slug}}' ? 'selected' : ''}>{{this.name}}</option>
+                            {{/each}}
+                        </select>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Giá *</label>
+                        <input type="number" class="form-control" name="price" value="${product.price}" min="0" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Số lượng</label>
+                        <input type="number" class="form-control" name="stockQuantity" value="${product.stockQuantity || 0}" min="0">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Đơn vị</label>
+                        <input type="text" class="form-control" name="unit" value="${product.unit || ''}">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Giảm giá</label>
+                        <input type="text" class="form-control" name="discount" value="${product.discount || ''}">
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Thời gian bắt đầu giảm giá</label>
+                        <input type="datetime-local" class="form-control" name="discountStart" value="${formatDateForInput(product.discountStart)}" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Thời gian kết thúc giảm giá</label>
+                        <input id="discountEnd" type="datetime-local" class="form-control" name="discountExpiry" value="${formatDateForInput(product.discountExpiry)}" min="0" required>
+                    </div>
+                    <div class="form-check mt-2">
+                        <input class="form-check-input" type="checkbox" id="noEndDateEdit" name="unlimitDiscount"  ${product.unlimitDiscount ? 'checked' : ''}>
+                        <label class="form-check-label" for="noEndDate">Không thời hạn</label>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Mô tả ngắn</label>
+                    <textarea class="form-control" name="shortDescription" rows="2">${product.sortDescription || ''}</textarea>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Mô tả chi tiết</label>
+                    <textarea class="form-control" name="description" rows="4">${product.description || ''}</textarea>
+                </div>
+                <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Xuất xứ</label>
+                            <input type="text" class="form-control" name="origin" value="${product.origin}">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Hạn sử dụng</label>
+                            <input type="text" class="form-control" name="expiry" value="${product.expiry}">
+                        </div>
+                </div>
+                <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Hướng dẫn bảo quản</label>
+                            <input type="text" class="form-control" name="storageInstructions" value="${product.storage.instructions}">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Nhiệt độ bảo quản</label>
+                            <input type="text" class="form-control" name="storageTemperature" placeholder="ví dụ: 2-8°C" value="${product.storage.temperature}">
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Calories (kcal)</label>
+                            <input type="number" class="form-control" name="calories" min="0" value= "${product.nutritionFacts.calories}"> 
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Các loại vitamin</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="vitamins" value="Vitamin C" id="vitaminC" ${hasVitamin('Vitamin C') ? 'checked' : ''}>
+                                <label class="form-check-label" for="vitaminC">Vitamin C</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="vitamins" value="Vitamin B" id="vitaminB" ${hasVitamin('Vitamin B') ? 'checked' : ''}>
+                                <label class="form-check-label" for="vitaminB">Vitamin B</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="vitamins" value="Vitamin A" id="vitaminA" ${hasVitamin('Vitamin A') ? 'checked' : ''}>
+                                <label class="form-check-label" for="vitaminA">Vitamin A</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="vitamins" value="Vitamin E" id="vitaminE" ${hasVitamin('Vitamin E') ? 'checked' : ''}>
+                                <label class="form-check-label" for="vitaminE">Vitamin E</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="vitamins" value="Vitamin K" id="vitaminK" ${hasVitamin('Vitamin K') ? 'checked' : ''}>
+                                <label class="form-check-label" for="vitaminK">Vitamin K</label>
+                            </div>
+
+                        </div>
+                    </div>
+                <div class="mb-3">
+                    <label class="form-label">Cập nhật hình ảnh</label>
+                    <input type="file" class="form-control" name="img-product" multiple accept="image/*">
+                    <div class="form-text">Chọn hình ảnh mới (sẽ thay thế hình cũ)</div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="isFeatured" ${product.isFeatured ? 'checked' : ''}>
+                            <label class="form-check-label">Sản phẩm nổi bật</label>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            const discountStart = document.querySelector("input[name='discountStart']");
+            const discountExpiry = document.querySelector("#discountEnd");
+            const unlimitDiscount = document.querySelector('#noEndDateEdit');
+
+            if (unlimitDiscount.checked) {
+                discountStart.disabled = true;
+                discountStart.value = "";
+                discountExpiry.disabled = true;
+                discountExpiry.value = "";
+            }
+
+            unlimitDiscount.addEventListener('change', (e) => {
+                if (e.target.checked) {
+                    discountStart.disabled = true;
+                    discountStart.value = "";
+                    discountExpiry.disabled = true;
+                    discountExpiry.value = "";
+                } else {
+                    discountStart.disabled = false;
+                    discountExpiry.disabled = false;
+                }
+            })
+            
+            new bootstrap.Modal(document.getElementById('editProductModal')).show();
+        } else {
+            showToast('error', data.message);
+        }
+    } catch (error) {
+        console.log(error);
+        showToast('error', 'Có lỗi xảy ra khi tải thông tin sản phẩm!');
+    }
+}
+
+// Edit Product Form Submit
+document.getElementById('editProductForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const slug = formData.get('slug');
+    
+    try {
+        const response = await fetch(`/admin/products/${slug}`, {
+            method: 'PUT',
+            body: formData
+        });
+        
+        const data = await response.json();
+        
+        if (data.succes || data.success) {
+            showToast('success', data.message);
+            bootstrap.Modal.getInstance(document.getElementById('editProductModal')).hide();
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            showToast('error', data.message);
+        }
+    } catch (error) {
+        showToast('error', 'Có lỗi xảy ra khi cập nhật sản phẩm!');
+    }
+});
+
+// Search functionality
+document.getElementById('searchProduct').addEventListener('input', (e) => {
+    const searchTerm = e.target.value.toLowerCase();
+    const rows = document.querySelectorAll('#productsTableBody tr');
+    
+    rows.forEach(row => {
+        const productName = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+        if (productName.includes(searchTerm)) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+});
+
+// Filter theo danh mục
+document.getElementById('categoryFilter').addEventListener('change', (e) => {
+    const selectedCategory = e.target.value;
+    const params = new URLSearchParams(window.location.search);
+
+    if (selectedCategory) {
+        params.set('slug', selectedCategory);
+    } else {
+        params.delete('slug');
+    }
+
+    window.location.href = `${window.location.pathname}?${params.toString()}`;
+});
+
+// Xử lý khi người dùng nhấn chuyển trang
+document.querySelectorAll('.pagination .page-link').forEach(link => {
+    link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const url = new URL(link.href);
+        const newPage = url.searchParams.get('page');
+        
+        // Giữ nguyên slug (danh mục), searchTerm nếu có
+        const params = new URLSearchParams(window.location.search);
+        if (newPage) params.set('page', newPage);
+        else params.delete('page');
+
+        window.location.href = `${window.location.pathname}?${params.toString()}`;
+    });
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+    const toggleBtn = document.getElementById("toggleDiscount");
+    const discountFields = document.getElementById("discountFields");
+    const noEndDate = document.getElementById("noEndDate");
+    const discountExpiry = document.querySelector("input[name='discountExpiry']");
+
+    // Ẩn/hiện form khuyến mại
+    toggleBtn.addEventListener("click", () => {
+        discountFields.classList.toggle("d-none");
+        if (!discountFields.classList.contains("d-none")) {
+            toggleBtn.textContent = "Ẩn khuyến mại";
+        } else {
+            toggleBtn.textContent = "+ Thêm khuyến mại";
+        }
+    });
+
+    // Checkbox không thời hạn
+    noEndDate.addEventListener("change", (e) => {
+        if (e.target.checked) {
+            discountExpiry.disabled = true;
+            discountExpiry.value = "";
+        } else {
+            discountExpiry.disabled = false;
+        }
+    });
+});
+
+
+// Helper function to format currency
+function formatCurrency(amount) {
+    return new Intl.NumberFormat('vi-VN', {
+        style: 'currency',
+        currency: 'VND'
+    }).format(amount);
+}
+</script>
+
+{{/admin-layout}}

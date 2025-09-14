@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đặt hàng thành công - {{orderNumber}}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            padding: 40px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: pulse 3s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; transform: scale(0.8); }
+            50% { opacity: 1; transform: scale(1); }
+        }
+
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .success-icon::before {
+            content: '✓';
+            font-size: 40px;
+            color: #4CAF50;
+            font-weight: bold;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .order-info {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border-left: 5px solid #4CAF50;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: #555;
+        }
+
+        .info-value {
+            color: #333;
+            font-weight: 500;
+        }
+
+        .order-number {
+            font-size: 1.3rem;
+            color: #4CAF50;
+            font-weight: bold;
+        }
+
+        .items-section {
+            margin: 30px 0;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            color: #333;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+
+        .item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background: #fff;
+            border: 1px solid #eee;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .item-info {
+            flex: 1;
+        }
+
+        .item-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .item-details {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .item-price {
+            font-weight: bold;
+            color: #4CAF50;
+            font-size: 1.1rem;
+        }
+
+        .total-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 30px 0;
+        }
+
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+        }
+
+        .total-final {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #4CAF50;
+            border-top: 2px solid #4CAF50;
+            padding-top: 15px;
+            margin-top: 15px;
+        }
+
+        .next-steps {
+            background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 30px 0;
+        }
+
+        .next-steps h3 {
+            color: #1976d2;
+            margin-bottom: 15px;
+        }
+
+        .next-steps ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .next-steps li {
+            padding: 8px 0;
+            padding-left: 25px;
+            position: relative;
+            color: #333;
+        }
+
+        .next-steps li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: #1976d2;
+            font-weight: bold;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            text-decoration: none;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 180px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #2196F3, #1976D2);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .contact-info {
+            background: #fff3cd;
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .contact-info h4 {
+            color: #856404;
+            margin-bottom: 15px;
+        }
+
+        .contact-info p {
+            color: #856404;
+            margin: 5px 0;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                margin: 10px;
+                border-radius: 15px;
+            }
+
+            .header {
+                padding: 30px 20px;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .content {
+                padding: 20px;
+            }
+
+            .info-row {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 5px;
+            }
+
+            .item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .buttons {
+                flex-direction: column;
+            }
+
+            .btn {
+                min-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="success-icon"></div>
+            <h1>Đặt hàng thành công!</h1>
+            <p>Cảm ơn bạn đã tin tưởng và lựa chọn chúng tôi</p>
+        </div>
+
+        <div class="content">
+            <div class="order-info">
+                <div class="info-row">
+                    <span class="info-label">Mã đơn hàng:</span>
+                    <span class="info-value order-number">#{{order._id}}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Ngày đặt hàng:</span>
+                    <span class="info-value">{{formatDate order.createdAt}}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Tên người nhận:</span>
+                    <span class="info-value">{{order.recipientName}}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Email:</span>
+                    <span class="info-value">{{order.user.email}}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Số điện thoại người nhận:</span>
+                    <span class="info-value">{{order.recipientPhone}}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Địa chỉ giao hàng:</span>
+                    <span class="info-value">{{order.deliveryAddress}}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Phương thức thanh toán:</span>
+                    <span class="info-value">{{#if (eq order.paymentMethod 'cod')}} Tiền mặt {{/if}}</span>
+                </div>
+            </div>
+
+            <div class="items-section">
+                <h2 class="section-title">Chi tiết đơn hàng</h2>
+                {{#each order.items}}
+                <div class="item">
+                    <div class="item-info">
+                        <div class="item-name">{{this.product.name}}</div>
+                        <div class="item-details">
+                            Số lượng: {{this.quantity}}
+                        </div>
+                    </div>
+                    <div class="item-price">{{formatCurrency this.price}}</div>
+                </div>
+                {{/each}}
+            </div>
+
+            <div class="total-section">
+                {{#if discount}}
+                <div class="total-row">
+                    <span>Giảm giá:</span>
+                    <span>-{{formatCurrency discount}}</span>
+                </div>
+                {{/if}}
+                <div class="total-row total-final">
+                    <span>Tổng cộng:</span>
+                    <span>{{formatCurrency order.totalAmount}}</span>
+                </div>
+            </div>
+
+            <div class="next-steps">
+                <h3>Các bước tiếp theo:</h3>
+                <ul>
+                    <li>Chúng tôi sẽ gửi email xác nhận đến địa chỉ của bạn trong vòng 5 phút</li>
+                    <li>Đơn hàng sẽ được xử lý và chuẩn bị trong 1-2 ngày làm việc</li>
+                    <li>Bạn sẽ nhận được thông báo khi đơn hàng được giao cho đơn vị vận chuyển</li>
+                    <li>Thời gian giao hàng dự kiến: {{estimatedDelivery}}</li>
+                </ul>
+            </div>
+
+            <div class="buttons">
+                <a href="/orders/{{orderNumber}}" class="btn btn-primary">
+                    Theo dõi đơn hàng
+                </a>
+                <a href="/products" class="btn btn-secondary">
+                    Tiếp tục mua sắm
+                </a>
+            </div>
+
+            <div class="contact-info">
+                <h4>Cần hỗ trợ?</h4>
+                <p>Hotline: 1900-xxxx</p>
+                <p>Email: support@example.com</p>
+                <p>Thời gian hỗ trợ: 8:00 - 22:00 hàng ngày</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Thêm hiệu ứng động khi trang load
+        document.addEventListener('DOMContentLoaded', function() {
+            const items = document.querySelectorAll('.item');
+            items.forEach((item, index) => {
+                setTimeout(() => {
+                    item.style.opacity = '0';
+                    item.style.transform = 'translateY(20px)';
+                    item.style.transition = 'all 0.5s ease';
+                    
+                    requestAnimationFrame(() => {
+                        item.style.opacity = '1';
+                        item.style.transform = 'translateY(0)';
+                    });
+                }, index * 100);
+            });
+
+            // Tự động cuộn đến đầu trang
+            window.scrollTo(0, 0);
+        });
+
+        // In trang
+        function printPage() {
+            window.print();
+        }
+    </script>
+</body>
+</html>

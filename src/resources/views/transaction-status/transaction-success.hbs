@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thanh toán thành công</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .success-header {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .success-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            animation: bounce 0.8s ease-out;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-10px);
+            }
+            60% {
+                transform: translateY(-5px);
+            }
+        }
+
+        .success-title {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .success-subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .order-details {
+            padding: 30px;
+        }
+
+        .order-info {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+
+        .order-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .order-row:last-child {
+            border-bottom: none;
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: #4CAF50;
+        }
+
+        .order-label {
+            color: #6c757d;
+            font-weight: 500;
+        }
+
+        .order-value {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            background: #4CAF50;
+            color: white;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .actions {
+            padding: 0 30px 30px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-right: 15px;
+            margin-bottom: 10px;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5a6fd8;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+
+        .thank-you {
+            background: linear-gradient(45deg, #ff6b6b, #feca57);
+            color: white;
+            padding: 25px;
+            text-align: center;
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        .order-id {
+            font-family: 'Courier New', monospace;
+            background: #e9ecef;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 15px;
+            }
+
+            .success-header {
+                padding: 30px 20px;
+            }
+
+            .success-title {
+                font-size: 1.5rem;
+            }
+
+            .order-details {
+                padding: 20px;
+            }
+
+            .actions {
+                padding: 0 20px 20px;
+            }
+
+            .btn {
+                display: block;
+                text-align: center;
+                margin-right: 0;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header thành công -->
+        <div class="success-header">
+            <div class="success-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <h1 class="success-title">Thanh toán thành công!</h1>
+            <p class="success-subtitle">Cảm ơn bạn đã mua hàng. Đơn hàng của bạn đã được xác nhận.</p>
+        </div>
+
+        <!-- Chi tiết đơn hàng -->
+        <div class="order-details">
+            <div class="order-info">
+                <div class="order-row">
+                    <span class="order-label">
+                        <i class="fas fa-hashtag"></i> Mã đơn hàng:
+                    </span>
+                    <span class="order-value order-id">{{order._id}}</span>
+                </div>
+
+                <div class="order-row">
+                    <span class="order-label">
+                        <i class="fas fa-calendar"></i> Ngày đặt:
+                    </span>
+                    <span class="order-value">{{formatDate order.createdAt}}</span>
+                </div>
+
+                <div class="order-row">
+                    <span class="order-label">
+                        <i class="fas fa-user"></i> Người nhận:
+                    </span>
+                    <span class="order-value">{{order.recipientName}}</span>
+                </div>
+
+                <div class="order-row">
+                    <span class="order-label">
+                        <i class="fas fa-envelope"></i> Email:
+                    </span>
+                    <span class="order-value">{{order.user.email}}</span>
+                </div>
+
+                <div class="order-row">
+                    <span class="order-label">
+                        <i class="fas fa-phone"></i> Số điện thoại:
+                    </span>
+                    <span class="order-value">{{order.user.phone}}</span>
+                </div>
+
+                <div class="order-row">
+                    <span class="order-label">
+                        <i class="fas fa-map-marker-alt"></i> Địa chỉ:
+                    </span>
+                    <span class="order-value">{{order.deliveryAddress}}</span>
+                </div>
+
+                <div class="order-row">
+                    <span class="order-label">
+                        <i class="fas fa-info-circle"></i> Trạng thái:
+                    </span>
+                    <span class="status-badge">Đã thanh toán</span>
+                </div>
+
+                {{#if order.products}}
+                <div class="order-row">
+                    <span class="order-label">
+                        <i class="fas fa-box"></i> Sản phẩm:
+                    </span>
+                    <span class="order-value">{{order.products.length}} sản phẩm</span>
+                </div>
+                {{/if}}
+
+                <div class="order-row">
+                    <span class="order-label">
+                        <i class="fas fa-money-bill-wave"></i> Tổng tiền:
+                    </span>
+                    <span class="order-value">{{formatCurrency order.totalAmount}}</span>
+                </div>
+            </div>
+
+            <!-- Danh sách sản phẩm (nếu có) -->
+            {{#if order.products}}
+            <div class="order-info">
+                <h3 style="margin-bottom: 15px; color: #333;">
+                    <i class="fas fa-shopping-cart"></i> Sản phẩm đã mua:
+                </h3>
+                {{#each order.products}}
+                <div class="order-row">
+                    <span class="order-label">{{this.name}}</span>
+                    <span class="order-value">
+                        {{this.quantity}} x {{formatCurrency this.price}}
+                    </span>
+                </div>
+                {{/each}}
+            </div>
+            {{/if}}
+        </div>
+
+        <!-- Các hành động -->
+        <div class="actions">
+            <a href="/orders/{{order._id}}/invoice" class="btn btn-primary">
+                <i class="fas fa-download"></i> Tải hóa đơn
+            </a>
+            <a href="/orders/{{order._id}}/track" class="btn btn-secondary">
+                <i class="fas fa-truck"></i> Theo dõi đơn hàng
+            </a>
+            <a href="/products" class="btn btn-secondary">
+                <i class="fas fa-home"></i> Về trang chủ
+            </a>
+        </div>
+
+        <!-- Lời cảm ơn -->
+        <div class="thank-you">
+            <i class="fas fa-heart"></i>
+            Cảm ơn bạn đã tin tưởng và lựa chọn chúng tôi!
+        </div>
+    </div>
+
+    <script>
+        // Tự động reload sau 30 giây để đảm bảo thông tin mới nhất
+        setTimeout(() => {
+            // Có thể chuyển hướng về trang chủ hoặc trang đơn hàng
+            // window.location.href = '/';
+        }, 30000);
+
+        // Hiệu ứng confetti (tùy chọn)
+        function createConfetti() {
+            const colors = ['#4CAF50', '#2196F3', '#FF9800', '#E91E63', '#9C27B0'];
+            for (let i = 0; i < 50; i++) {
+                const confetti = document.createElement('div');
+                confetti.style.position = 'fixed';
+                confetti.style.width = '10px';
+                confetti.style.height = '10px';
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.left = Math.random() * 100 + '%';
+                confetti.style.top = '-10px';
+                confetti.style.borderRadius = '50%';
+                confetti.style.pointerEvents = 'none';
+                confetti.style.animation = `fall ${Math.random() * 3 + 2}s linear forwards`;
+                document.body.appendChild(confetti);
+
+                setTimeout(() => {
+                    confetti.remove();
+                }, 5000);
+            }
+        }
+
+        // CSS cho animation rơi
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fall {
+                to {
+                    transform: translateY(100vh) rotate(360deg);
+                }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Chạy confetti khi trang load
+        window.addEventListener('load', () => {
+            setTimeout(createConfetti, 500);
+        });
+    </script>
+</body>
+</html>

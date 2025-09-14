@@ -5,6 +5,7 @@ const AddressSchema = new mongoose.Schema({
     addressLine: String,
     city: String,
     ward: String,
+    shortAddress: String,
     isDefault: {type: Boolean, default: false},
 })
 
@@ -18,11 +19,15 @@ const UserSchema = new mongoose.Schema(
         dateOfBirth: {type:Date, required: true},
         gender: {type: String, enum: ['male', 'female', 'other'], required: true},
         avatar: {url: String, publicId: String},
-        role: {type: String, enum: ['admin', 'seller', 'user'], default: 'user'},
+        role: {type: String, enum: ['admin', 'user'], default: 'user'},
         addresses: [AddressSchema],
+        defaultAddress: {type: String},
         isVerified: {type: Boolean, default: false},
         passwordResetToken: String,
         passwordResetExpires: Date,
+        wishlist: [
+            {type: mongoose.Schema.Types.ObjectId, ref: 'Product'},
+        ]
     },
     {
         timestamps: true

@@ -1,0 +1,1035 @@
+{{#> admin-layout title="Quản lý đơn hàng" isOrders=true}}
+
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <!-- Header Section -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-shopping-cart me-2"></i>Danh sách đơn hàng
+                    </h5>
+                    <div class="d-flex gap-2">
+                        <form method="GET" class="d-flex gap-2" id="filterForm">
+                            <div class="input-group" style="width: 300px;">
+                                <span class="input-group-text"><i class="fas fa-search"></i></span>
+                                <input type="text" class="form-control" name="search" 
+                                       placeholder="Tìm kiếm đơn hàng..." value="{{search}}">
+                            </div>
+                            <select class="form-select" name="status" style="width: 180px;">
+                                <option value="">Tất cả trạng thái</option>
+                                <option value="pending" {{#if (eq status 'pending')}}selected{{/if}}>Chờ xử lý</option>
+                                <option value="confirmed" {{#if (eq status 'confirmed')}}selected{{/if}}>Đã xác nhận</option>
+                                <option value="processing" {{#if (eq status 'processing')}}selected{{/if}}>Đang xử lý</option>
+                                <option value="shipped" {{#if (eq status 'shipped')}}selected{{/if}}>Đã gửi hàng</option>
+                                <option value="delivered" {{#if (eq status 'delivered')}}selected{{/if}}>Đã giao hàng</option>
+                                <option value="cancelled" {{#if (eq status 'cancelled')}}selected{{/if}}>Đã hủy</option>
+                            </select>
+                            <select class="form-select" name="payment" style="width: 150px;">
+                                <option value="">Tất cả thanh toán</option>
+                                <option value="cod" {{#if (eq payment 'cod')}}selected{{/if}}>COD</option>
+                                <option value="vnpay" {{#if (eq payment 'vnpay')}}selected{{/if}}>VNPay</option>
+                                <option value="momo" {{#if (eq payment 'momo')}}selected{{/if}}>Momo</option>
+                            </select>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Statistics Cards -->
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="card bg-primary text-white">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h4 class="mb-0">{{orders.length}}</h4>
+                                        <small>Tổng đơn hàng</small>
+                                    </div>
+                                    <i class="fas fa-shopping-cart fa-2x opacity-75"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-warning text-white">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h4 class="mb-0">{{pendingOrders}}</h4>
+                                        <small>Chờ xử lý</small>
+                                    </div>
+                                    <i class="fas fa-clock fa-2x opacity-75"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-success text-white">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h4 class="mb-0">{{deliveredOrders}}</h4>
+                                        <small>Đã giao hàng</small>
+                                    </div>
+                                    <i class="fas fa-check-circle fa-2x opacity-75"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-info text-white">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h4 class="mb-0">{{formatMoney totalRevenue}}</h4>
+                                        <small>Doanh thu</small>
+                                    </div>
+                                    <i class="fas fa-dollar-sign fa-2x opacity-75"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Active Orders Table -->
+                <div class="mb-4">
+                    <h6 class="mb-3">
+                        <i class="fas fa-list-ul me-2"></i>Đơn hàng đang hoạt động
+                    </h6>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Mã đơn hàng</th>
+                                    <th>Khách hàng(Người nhận hàng)</th>
+                                    <th>Sản phẩm</th>
+                                    <th>Tổng tiền</th>
+                                    <th>Thanh toán</th>
+                                    <th>Trạng thái</th>
+                                    <th>Ngày đặt</th>
+                                    <th>Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {{#each orders}}
+                                {{#unless (eq this.status 'cancelled')}}
+                                <tr data-order-id="{{this._id}}">
+                                    <td>
+                                        <strong class="text-primary">#{{this._id}}</strong>
+                                    </td>
+                                    <td>
+                                        <div>
+                                            <strong>{{this.recipientName}}</strong>
+                                            <br>
+                                            <small class="text-muted">{{this.user.email}}</small>
+                                            {{#if this.recipientPhone}}
+                                                <br><small class="text-muted">{{this.recipientPhone}}</small>
+                                            {{/if}}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div>
+                                            {{#each this.items}}
+                                                {{#if @first}}
+                                                    <span class="badge bg-secondary">{{this.product.name}}x{{this.quantity}}</span>
+                                                {{/if}}
+                                            {{/each}}
+                                            {{#if (gt items.length 1)}}
+                                                <span class="badge text-bg-primary">và {{minus items.length 1}} sản phẩm khác</span>
+                                            {{/if}}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <strong class="text-success">{{formatMoney this.totalAmount}}</strong>
+                                    </td>
+                                    <td>
+                                        {{#if (eq this.paymentMethod 'cod')}}
+                                            <span class="badge bg-secondary">
+                                                <i class="fas fa-money-bill me-1"></i>COD
+                                            </span>
+                                        {{else if (eq this.bankingMethod 'vnpay')}}
+                                            <span class="badge bg-primary">
+                                                <i class="fas fa-credit-card me-1"></i>VNPay
+                                            </span>
+                                            {{#if (eq this.isPaid true)}}
+                                                <span>Đã thanh toán</span>
+                                            {{/if}}
+                                        {{else if (eq this.bankingMethod 'momo')}}
+                                            <span class="badge bg-danger">
+                                                <i class="fas fa-mobile-alt me-1"></i>Momo
+                                            </span>
+                                            {{#if (eq this.isPaid true)}}
+                                                <span>Đã thanh toán</span>
+                                            {{/if}}
+                                        {{else}}
+                                            <span class="badge bg-dark">{{this.paymentMethod}}</span>
+                                        {{/if}}
+                                    </td>
+                                    <td>
+                                        {{#if (eq this.status 'pending')}}
+                                            <span class="badge bg-warning text-dark">
+                                                <i class="fas fa-clock me-1"></i>Chờ xử lý
+                                            </span>
+                                        {{else if (eq this.status 'confirmed')}}
+                                            <span class="badge bg-info">
+                                                <i class="fas fa-check me-1"></i>Đã xác nhận
+                                            </span>
+                                        {{else if (eq this.status 'shipped')}}
+                                            <span class="badge bg-purple">
+                                                <i class="fas fa-truck me-1"></i>Đã gửi hàng
+                                            </span>
+                                        {{else if (eq this.status 'delivered')}}
+                                            <span class="badge bg-success">
+                                                <i class="fas fa-check-circle me-1"></i>Đã giao hàng
+                                            </span>
+                                        {{else}}
+                                            <span class="badge bg-secondary">{{this.status}}</span>
+                                        {{/if}}
+                                    </td>
+                                    <td>
+                                        <small>{{formatDate this.createdAt}}</small>
+                                    </td>
+                                    <td>
+                                        <div class="dropdown">
+                                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" 
+                                                    type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                <i class="fas fa-cog"></i>
+                                            </button>
+                                            <ul class="dropdown-menu">
+                                                <li>
+                                                    <a class="dropdown-item" href="#" onclick="viewOrder('{{this._id}}')">
+                                                        <i class="fas fa-eye me-2"></i>Xem chi tiết
+                                                    </a>
+                                                </li>
+                                                {{#unless (eq this.status 'delivered')}}
+                                                <li>
+                                                    <a class="dropdown-item" href="#" onclick="updateOrderStatus('{{this._id}}')">
+                                                        <i class="fas fa-edit me-2"></i>Cập nhật trạng thái
+                                                    </a>
+                                                </li>
+                                                {{/unless}}
+                                                <li>
+                                                    <a class="dropdown-item" href="#" onclick="printOrder('{{this._id}}')">
+                                                        <i class="fas fa-print me-2"></i>In đơn hàng
+                                                    </a>
+                                                </li>
+                                                {{#if (eq this.status 'pending')}}
+                                                <li><hr class="dropdown-divider"></li>
+                                                <li>
+                                                    <a class="dropdown-item text-danger" href="#" 
+                                                       onclick="cancelOrder('{{this._id}}')">
+                                                        <i class="fas fa-times me-2"></i>Hủy đơn hàng
+                                                    </a>
+                                                </li>
+                                                {{/if}}
+                                            </ul>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {{/unless}}
+                                {{else}}
+                                <tr>
+                                    <td colspan="8" class="text-center py-4">
+                                        <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
+                                        <p class="text-muted">Không tìm thấy đơn hàng đang hoạt động nào</p>
+                                    </td>
+                                </tr>
+                                {{/each}}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Cancelled Orders Section -->
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="mb-0">
+                        <i class="fas fa-times-circle me-2 text-danger"></i>Đơn hàng đã hủy
+                    </h6>
+                    <div class="d-flex gap-2">
+                        {{#if (gt totalCancelOrders 0)}}
+                        <button type="button" class="btn btn-danger" onclick="deleteMany()">Xoá tất cả đơn hàng đã huỷ</button>
+                        {{else}}
+                        <button type="button" class="btn btn-secondary" disabled>Xoá tất cả đơn hàng đã huỷ</button>
+                        {{/if}}
+                        <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" 
+                                data-bs-target="#cancelledOrdersTable" aria-expanded="false">
+                            <i class="fas fa-chevron-down me-1"></i>Thu gọn/Mở rộng
+                        </button>
+                    </div>
+                </div>
+                    
+                    <div class="collapse show" id="cancelledOrdersTable">
+                        <div class="table-responsive">
+                            <table class="table table-hover table-striped">
+                                <thead class="table-danger">
+                                    <tr>
+                                        <th>Mã đơn hàng</th>
+                                        <th>Khách hàng(Người nhận hàng)</th>
+                                        <th>Sản phẩm</th>
+                                        <th>Tổng tiền</th>
+                                        <th>Thanh toán</th>
+                                        <th>Trạng thái</th>
+                                        <th>Ngày đặt</th>
+                                        <th>Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {{#each orders}}
+                                    {{#if (eq this.status 'cancelled')}}
+                                    <tr data-order-id="{{this._id}}" class="table-light">
+                                        <td>
+                                            <strong class="text-muted">#{{this._id}}</strong>
+                                        </td>
+                                        <td>
+                                            <div>
+                                                <strong class="text-muted">{{this.recipientName}}</strong>
+                                                <br>
+                                                <small class="text-muted">{{this.user.email}}</small>
+                                                {{#if this.recipientPhone}}
+                                                    <br><small class="text-muted">{{this.recipientPhone}}</small>
+                                                {{/if}}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div>
+                                                {{#each this.items}}
+                                                <span class="badge bg-light text-dark border">{{this.product.name}}x{{this.quantity}}</span>
+                                                {{/each}}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <strong class="text-muted">{{formatMoney this.totalAmount}}</strong>
+                                        </td>
+                                        <td>
+                                            {{#if (eq this.paymentMethod 'cod')}}
+                                                <span class="badge bg-secondary">
+                                                    <i class="fas fa-money-bill me-1"></i>COD
+                                                </span>
+                                            {{else if (eq this.bankingMethod 'vnpay')}}
+                                                <span class="badge bg-primary">
+                                                    <i class="fas fa-credit-card me-1"></i>VNPay
+                                                </span>
+                                            {{else if (eq this.bankingMethod 'momo')}}
+                                                <span class="badge bg-danger">
+                                                    <i class="fas fa-mobile-alt me-1"></i>Momo
+                                                </span>
+                                            {{else}}
+                                                <span class="badge bg-dark">{{this.paymentMethod}}</span>
+                                            {{/if}}
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-danger">
+                                                <i class="fas fa-times me-1"></i>Đã hủy
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <small class="text-muted">{{formatDate this.createdAt}}</small>
+                                        </td>
+                                        <td>
+                                            <div class="dropdown">
+                                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" 
+                                                        type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                    <i class="fas fa-cog"></i>
+                                                </button>
+                                                <ul class="dropdown-menu">
+                                                    <li>
+                                                        <a class="dropdown-item" href="#" onclick="viewOrder('{{this._id}}')">
+                                                            <i class="fas fa-eye me-2"></i>Xem chi tiết
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a class="dropdown-item text-danger" href="#" 
+                                                            onclick="deleteOrder('{{this._id}}')">
+                                                            <i class="fas fa-times me-2"></i>Xoá đơn hàng
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {{/if}}
+                                    {{else}}
+                                    <tr>
+                                        <td colspan="8" class="text-center py-4">
+                                            <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                                            <p class="text-muted">Không có đơn hàng nào bị hủy</p>
+                                        </td>
+                                    </tr>
+                                    {{/each}}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pagination -->
+                {{#if (gt totalPages 1)}}
+                <nav aria-label="Order pagination" class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item {{#unless hasPrevPage}}disabled{{/unless}}">
+                            <a class="page-link" href="?page={{prevPage}}&search={{search}}&status={{status}}&payment={{payment}}" 
+                               {{#unless hasPrevPage}}tabindex="-1" aria-disabled="true"{{/unless}}>
+                                <i class="fas fa-chevron-left"></i> Trước
+                            </a>
+                        </li>
+                        
+                        {{#each pages}}
+                        <li class="page-item {{#if this.isCurrent}}active{{/if}}">
+                            <a class="page-link" href="?page={{this.page}}&search={{../search}}&status={{../status}}&payment={{../payment}}"
+                               {{#if this.isCurrent}}aria-current="page"{{/if}}>
+                                {{this.page}}
+                            </a>
+                        </li>
+                        {{/each}}
+                        
+                        <li class="page-item {{#unless hasNextPage}}disabled{{/unless}}">
+                            <a class="page-link" href="?page={{nextPage}}&search={{search}}&status={{status}}&payment={{payment}}"
+                               {{#unless hasNextPage}}tabindex="-1" aria-disabled="true"{{/unless}}>
+                                Sau <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+                {{/if}}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- View Order Modal -->
+<div class="modal fade" id="viewOrderModal" tabindex="-1" aria-labelledby="viewOrderModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewOrderModalLabel">
+                    <i class="fas fa-shopping-cart me-2"></i>Chi tiết đơn hàng
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="viewOrderBody">
+                <div class="d-flex justify-content-center">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Đang tải...</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                <button type="button" class="btn btn-primary" id="printOrderBtn">
+                    <i class="fas fa-print me-1"></i>In đơn hàng
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Update Status Modal -->
+<div class="modal fade" id="updateStatusModal" tabindex="-1" aria-labelledby="updateStatusModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="updateStatusModalLabel">
+                    <i class="fas fa-edit me-2"></i>Cập nhật trạng thái đơn hàng
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="updateStatusForm">
+                <div class="modal-body">
+                    <input type="hidden" name="orderId" id="statusOrderId">
+                    <div class="mb-3">
+                        <label class="form-label">Trạng thái mới</label>
+                        <select class="form-select" name="status" id="newStatus" required>
+                            <option value="pending">Chờ xử lý</option>
+                            <option value="confirmed">Đã xác nhận</option>
+                            <option value="shipped">Đã gửi hàng</option>
+                            <option value="delivered">Đã giao hàng</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Ghi chú (tùy chọn)</label>
+                        <textarea class="form-control" name="note" rows="3" 
+                                  placeholder="Ghi chú về việc cập nhật trạng thái..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-1"></i>Cập nhật
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+.bg-purple {
+    background-color: #6f42c1 !important;
+}
+
+.table-light tr:hover {
+    background-color: #f8f9fa !important;
+}
+
+#cancelledOrdersTable .table tbody tr {
+    opacity: 0.8;
+}
+
+#cancelledOrdersTable .table tbody tr:hover {
+    opacity: 1;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-submit form on input changes with debounce
+    const searchInput = document.querySelector('input[name="search"]');
+    const statusSelect = document.querySelector('select[name="status"]');
+    const paymentSelect = document.querySelector('select[name="payment"]');
+    let searchTimeout;
+
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                submitFilterForm();
+            }, 500);
+        });
+    }
+
+    if (statusSelect) {
+        statusSelect.addEventListener('change', submitFilterForm);
+    }
+
+    if (paymentSelect) {
+        paymentSelect.addEventListener('change', submitFilterForm);
+    }
+
+    function submitFilterForm() {
+        const form = document.getElementById('filterForm');
+        const formData = new FormData(form);
+        const params = new URLSearchParams(formData);
+        params.set('page', '1');
+        window.location.href = `${window.location.pathname}?${params.toString()}`;
+    }
+
+    // Toggle collapsed state icon
+    const collapseToggle = document.querySelector('[data-bs-target="#cancelledOrdersTable"]');
+    const cancelledTable = document.getElementById('cancelledOrdersTable');
+    
+    if (collapseToggle && cancelledTable) {
+        cancelledTable.addEventListener('show.bs.collapse', function() {
+            collapseToggle.innerHTML = '<i class="fas fa-chevron-up me-1"></i>Thu gọn/Mở rộng';
+        });
+        
+        cancelledTable.addEventListener('hide.bs.collapse', function() {
+            collapseToggle.innerHTML = '<i class="fas fa-chevron-down me-1"></i>Thu gọn/Mở rộng';
+        });
+    }
+});
+
+// View Order Details
+async function viewOrder(orderId) {
+    const modal = new bootstrap.Modal(document.getElementById('viewOrderModal'));
+    const modalBody = document.getElementById('viewOrderBody');
+    
+    modalBody.innerHTML = `
+        <div class="d-flex justify-content-center">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Đang tải...</span>
+            </div>
+        </div>
+    `;
+    
+    modal.show();
+    
+    try {
+        const response = await fetch(`/admin/orders/${orderId}`);
+        const data = await response.json();
+        
+        if (data.success) {
+            modalBody.innerHTML = buildOrderDetailsHTML(data.order);
+            document.getElementById('printOrderBtn').onclick = () => printOrder(orderId);
+        } else {
+            modalBody.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    ${data.message || 'Không thể tải thông tin đơn hàng'}
+                </div>
+            `;
+        }
+    } catch (error) {
+        console.error('Error fetching order details:', error);
+        modalBody.innerHTML = `
+            <div class="alert alert-danger">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                Có lỗi xảy ra khi tải thông tin đơn hàng
+            </div>
+        `;
+    }
+}
+
+// Build Order Details HTML
+function buildOrderDetailsHTML(order) {
+    const statusMap = {
+        pending: { text: 'Chờ xử lý', class: 'warning', icon: 'clock' },
+        confirmed: { text: 'Đã xác nhận', class: 'info', icon: 'check' },
+        shipped: { text: 'Đã gửi hàng', class: 'purple', icon: 'truck' },
+        delivered: { text: 'Đã giao hàng', class: 'success', icon: 'check-circle' },
+        cancelled: { text: 'Đã hủy', class: 'danger', icon: 'times' }
+    };
+
+    const status = statusMap[order.status] || { text: order.status, class: 'secondary', icon: 'question' };
+    
+    return `
+        <div class="row">
+            <div class="col-md-8">
+                <h6 class="mb-3">Thông tin đơn hàng</h6>
+                <table class="table table-borderless">
+                    <tr>
+                        <td><strong>Mã đơn hàng:</strong></td>
+                        <td>#${order._id}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Mã vận chuyển:</strong></td>
+                        <td>#${orderCode(order.order_code,  'Chưa có')}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Ngày đặt:</strong></td>
+                        <td>${formatDate(order.createdAt)}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Trạng thái:</strong></td>
+                        <td>
+                            <span class="badge bg-${status.class}">
+                                <i class="fas fa-${status.icon} me-1"></i>${status.text}
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>Thanh toán:</strong></td>
+                        <td>${order.paymentMethod.toUpperCase()}</td>
+                    </tr>
+                </table>
+
+                <h6 class="mb-3 mt-4">Danh sách sản phẩm</h6>
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Sản phẩm</th>
+                                <th>Số lượng</th>
+                                <th>Giá</th>
+                                <th>Thành tiền</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${order.items.map(item => `
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            ${item.product.imageURL && item.product.imageURL[0] ? 
+                                                `<img src="${item.product.imageURL[0].thumbnail}" width="50" height="50" class="me-2 rounded" style="object-fit: cover;">` : 
+                                                '<div class="bg-light rounded me-2" style="width: 50px; height: 50px;"></div>'
+                                            }
+                                            <div>
+                                                <strong>${item.product.name}</strong>
+                                                ${item.size ? `<br><small>Size: ${item.size}</small>` : ''}
+                                                ${item.color ? `<br><small>Màu: ${item.color}</small>` : ''}
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>${item.quantity}</td>
+                                    <td>${formatMoney(item.price)}</td>
+                                    <td><strong>${formatMoney(item.price * item.quantity)}</strong></td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <th colspan="3">Tổng cộng:</th>
+                                <th class="text-success">${formatMoney(order.totalAmount)}</th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <h6 class="mb-3">Thông tin khách hàng</h6>
+                <div class="card">
+                    <div class="card-body">
+                        <p><strong>Tên:</strong> ${order.recipientName}</p>
+                        <p><strong>Email:</strong> ${order.user.email}</p>
+                        <p><strong>Điện thoại:</strong> ${order.recipientPhone || 'Chưa có'}</p>
+                    </div>
+                </div>
+
+                <h6 class="mb-3 mt-4">Địa chỉ giao hàng</h6>
+                <div class="card">
+                    <div class="card-body">
+                        <p class="mb-0">${order.deliveryAddress}</p>
+                    </div>
+                </div>
+
+                ${order.note ? `
+                    <h6 class="mb-3 mt-4">Ghi chú</h6>
+                    <div class="card">
+                        <div class="card-body">
+                            <p class="mb-0">${order.note}</p>
+                        </div>
+                    </div>
+                ` : ''}
+            </div>
+        </div>
+    `;
+}
+
+// Update Order Status
+async function updateOrderStatus(orderId) {
+    document.getElementById('statusOrderId').value = orderId;
+    const modal = new bootstrap.Modal(document.getElementById('updateStatusModal'));
+    modal.show();
+}
+
+// Update Status Form Submit
+document.getElementById('updateStatusForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    const originalBtnContent = submitBtn.innerHTML;
+    
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Đang cập nhật...';
+    
+    const formData = new FormData(e.target);
+    const data = Object.fromEntries(formData.entries());
+    const orderId = data.orderId;
+    delete data.orderId;
+    
+    try {
+        const response = await fetch(`/admin/orders/${orderId}/status`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showToast('success', result.message || 'Cập nhật trạng thái thành công!');
+            bootstrap.Modal.getInstance(document.getElementById('updateStatusModal')).hide();
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            showToast('error', result.message);
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalBtnContent;
+        }
+    } catch (error) {
+        console.error('Error updating order status:', error);
+        showToast('error', 'Có lỗi xảy ra khi cập nhật trạng thái!');
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalBtnContent;
+    }
+});
+
+// Cancel Order
+async function cancelOrder(orderId) {
+    const result = await Swal.fire({
+        title: 'Hủy đơn hàng?',
+        text: 'Bạn có chắc chắn muốn hủy đơn hàng này?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc3545',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Hủy đơn hàng',
+        cancelButtonText: 'Không',
+        input: 'textarea',
+        inputPlaceholder: 'Lý do hủy đơn hàng...',
+        inputValidator: (value) => {
+            if (!value) {
+                return 'Vui lòng nhập lý do hủy đơn hàng!';
+            }
+        }
+    });
+
+    if (result.isConfirmed) {
+        try {
+            const response = await fetch(`/order/${orderId}/cancel`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ reason: result.value })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                showToast('success', data.message);
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                showToast('error', data.message);
+            }
+        } catch (error) {
+            console.error('Error cancelling order:', error);
+            showToast('error', 'Có lỗi xảy ra khi hủy đơn hàng!');
+        }
+    }
+}
+
+// Print Order
+function printOrder(orderId) {
+    window.open(`/admin/orders/${orderId}/print`, '_blank');
+}
+
+// Delete Order
+async function deleteOrder(orderId) {
+    const result = await Swal.fire({
+        title: 'Xóa đơn hàng?',
+        html: `
+            <p>Bạn có chắc chắn muốn xóa vĩnh viễn đơn hàng <strong>#${orderId}</strong>?</p>
+            <p class="text-danger small"><i class="fas fa-exclamation-triangle me-1"></i>Hành động này không thể hoàn tác!</p>
+        `,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc3545',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: '<i class="fas fa-trash me-1"></i>Xóa vĩnh viễn',
+        cancelButtonText: '<i class="fas fa-times me-1"></i>Hủy bỏ',
+        focusCancel: true,
+        reverseButtons: true,
+        preConfirm: (reason) => {
+            return { reason: reason || 'Không có lý do cụ thể' };
+        }
+    });
+
+    if (result.isConfirmed) {
+        // Show loading state
+        const loadingAlert = Swal.fire({
+            title: 'Đang xóa...',
+            html: 'Vui lòng chờ trong giây lát',
+            icon: 'info',
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            showConfirmButton: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        try {
+            const response = await fetch(`/admin/orders/${orderId}`, {
+                method: 'DELETE',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ 
+                    reason: result.value.reason,
+                    timestamp: new Date().toISOString()
+                })
+            });
+            
+            const data = await response.json();
+            
+            // Close loading alert
+            loadingAlert.close();
+            
+            if (response.ok && data.success) {
+                // Success notification
+                await Swal.fire({
+                    title: 'Đã xóa!',
+                    text: data.message || 'Đơn hàng đã được xóa thành công.',
+                    icon: 'success',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+                
+                // Remove the row from table with animation
+                const orderRow = document.querySelector(`tr[data-order-id="${orderId}"]`);
+                if (orderRow) {
+                    orderRow.style.transition = 'opacity 0.3s ease-out';
+                    orderRow.style.opacity = '0';
+                    setTimeout(() => {
+                        orderRow.remove();
+                        
+                        // Check if table is empty and show empty state
+                        const tableBody = orderRow.closest('tbody');
+                        if (tableBody && tableBody.children.length === 0) {
+                            tableBody.innerHTML = `
+                                <tr>
+                                    <td colspan="8" class="text-center py-4">
+                                        <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                                        <p class="text-muted">Không có đơn hàng nào</p>
+                                    </td>
+                                </tr>
+                            `;
+                        }
+                    }, 300);
+                }
+                
+                // Optionally reload page after delay
+                setTimeout(() => {
+                    location.reload();
+                }, 1500);
+                
+            } else {
+                // Error from server
+                await Swal.fire({
+                    title: 'Lỗi!',
+                    text: data.message || 'Không thể xóa đơn hàng. Vui lòng thử lại.',
+                    icon: 'error',
+                    confirmButtonText: 'Đóng'
+                });
+            }
+        } catch (error) {
+            console.error('Error deleting order:', error);
+            
+            // Close loading alert
+            loadingAlert.close();
+            
+            // Network or other error
+            await Swal.fire({
+                title: 'Lỗi kết nối!',
+                html: `
+                    <p>Có lỗi xảy ra khi xóa đơn hàng:</p>
+                    <p class="text-danger small">${error.message}</p>
+                    <p class="small">Vui lòng kiểm tra kết nối mạng và thử lại.</p>
+                `,
+                icon: 'error',
+                confirmButtonText: 'Đóng'
+            });
+        }
+    }
+}
+
+async function deleteMany() {
+    const result = await Swal.fire({
+        title: 'Xóa tất cả đơn hàng đã bị huỷ?',
+        html: `
+            <p>Bạn có chắc chắn muốn xóa vĩnh viễn tất cả đơn hàng đã bị huỷ ?</p>
+            <p class="text-danger small"><i class="fas fa-exclamation-triangle me-1"></i>Hành động này không thể hoàn tác!</p>
+        `,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc3545',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: '<i class="fas fa-trash me-1"></i>Xóa vĩnh viễn',
+        cancelButtonText: '<i class="fas fa-times me-1"></i>Hủy bỏ',
+        focusCancel: true,
+        reverseButtons: true,
+        preConfirm: (reason) => {
+            return { reason: reason || 'Không có lý do cụ thể' };
+        }
+    });
+
+    if (result.isConfirmed) {
+        // Show loading state
+        const loadingAlert = Swal.fire({
+            title: 'Đang xóa...',
+            html: 'Vui lòng chờ trong giây lát',
+            icon: 'info',
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            showConfirmButton: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        try {
+            const response = await fetch(`/admin/cancelOrders`, {
+                method: 'DELETE',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ 
+                    reason: result.value.reason,
+                    timestamp: new Date().toISOString()
+                })
+            });
+            
+            const data = await response.json();
+            
+            // Close loading alert
+            loadingAlert.close();
+            
+            if (response.ok && data.success) {
+                // Success notification
+                await Swal.fire({
+                    title: 'Đã xóa!',
+                    text: data.message || 'Đã xóa thành công.',
+                    icon: 'success',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+
+                // Optionally reload page after delay
+                setTimeout(() => {
+                    location.reload();
+                }, 1000);
+            } else {
+                // Error from server
+                await Swal.fire({
+                    title: 'Lỗi!',
+                    text: data.message || 'Không thể xóa đơn hàng. Vui lòng thử lại.',
+                    icon: 'error',
+                    confirmButtonText: 'Đóng'
+                });
+            }
+        } catch (error) {
+            console.error('Error deleting order:', error);
+            
+            // Close loading alert
+            loadingAlert.close();
+            
+            // Network or other error
+            await Swal.fire({
+                title: 'Lỗi kết nối!',
+                html: `
+                    <p>Có lỗi xảy ra khi xóa đơn hàng:</p>
+                    <p class="text-danger small">${error.message}</p>
+                    <p class="small">Vui lòng kiểm tra kết nối mạng và thử lại.</p>
+                `,
+                icon: 'error',
+                confirmButtonText: 'Đóng'
+            });
+        }
+    }
+}
+
+// Helper functions
+function formatDate(dateString) {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('vi-VN', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+}
+
+function orderCode(a, b) {
+      if (a) {
+        return a;
+      }
+      return b;
+    }
+
+function formatMoney(amount) {
+    if (!amount) return '0₫';
+    return new Intl.NumberFormat('vi-VN', {
+        style: 'currency',
+        currency: 'VND'
+    }).format(amount);
+}
+
+// Toast notification function (assuming it exists)
+function showToast(type, message) {
+    // Implementation depends on your toast library
+    console.log(`${type}: ${message}`);
+}
+</script>
+
+{{/admin-layout}}

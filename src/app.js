@@ -8,12 +8,10 @@ const app = express();
 const path = require('path');
 const PORT = process.env.PORT || 3000;
 
-// Call Function Helpers
-const formatDate = require('./utils/formatDate.helper');
-const eq = require('./utils/eq.helper');
-
 const db = require('./config/db');
 const { initMinioBucket } = require('./services/uploadMinioService');
+const { startOrderStatusCron, checkRefundStatus } = require('./services/startCron');
+const helpers = require('./utils/function.helpers');
 
 // Kết nối đến db
 db.connect();
@@ -28,18 +26,21 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(methodOverride('_method'));
 
-
+// Khởi chạy cron để kiểm tra trạng thái đơn hàng 
+startOrderStatusCron();
+checkRefundStatus();
 
 app.engine(
     'hbs',
     engine({
         extname: '.hbs',
-        helpers: {
-            formatDate,
-            eq,
-        }
-    })
-)
+        helpers: helpers,
+        defaultLayout: 'main', // layout mặc định
+        layoutsDir: path.join(__dirname, 'resources/views/layouts'),
+        partialsDir: [
+            path.join(__dirname, 'resources/views/productsViews'),    // nơi chứa product-featured
+        ],
+    }));
 
 app.set('view engine', 'hbs');
 app.set('views', path.join(__dirname, 'resources/views'));

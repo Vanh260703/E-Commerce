@@ -1,0 +1,624 @@
+{{!-- Sử dụng layout product.hbs --}}
+{{!< layout/product}}
+
+<!-- Breadcrumb -->
+<section class="py-3" style="background: #f8f9fa;">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item">
+                    <a href="/" class="text-decoration-none">🏠 Trang chủ</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="/products" class="text-decoration-none">🍇 Trái cây</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="/category/{{product.categorySlug}}" class="text-decoration-none">
+                        {{product.category.icon}} {{nameCategory}}
+                    </a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">
+                    {{product.icon}} {{product.name}}
+                </li>
+            </ol>
+        </nav>
+    </div>
+</section>
+
+<!-- Product Detail Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <!-- Product Images -->
+            <div class="col-lg-6 mb-4">
+                <div class="product-images">
+                    <!-- Main Image -->
+                    <div class="main-image-container position-relative mb-3">
+                        <img id="mainImage" src="{{product.imageURL.[0].original}}" alt="{{product.name}}" 
+                             class="img-fluid rounded-3 w-100" style="height: 500px; object-fit: cover;">
+                        
+                        <!-- Badges -->
+                        <div class="position-absolute top-0 start-0 p-3">
+                            {{#if product.discount}}
+                            <span class="discount-badge">🔥 -{{product.discount}}%</span>
+                            {{/if}}
+                            {{#if product.isFresh}}
+                            <span class="fresh-badge d-block mt-2">✨ Tươi ngon</span>
+                            {{/if}}
+                            {{#if product.isOrganic}}
+                            <span class="organic-badge d-block mt-2">🌿 Organic</span>
+                            {{/if}}
+                        </div>
+
+                        <!-- Wishlist Button -->
+                        <div class="position-absolute top-0 end-0 p-3">
+                            <button class="btn btn-light rounded-circle" onclick="toggleWishlist('{{product.id}}')">
+                                ❤️
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Thumbnail Images -->
+                    {{#if product.images}}
+                    <div class="row g-2">
+                        {{#each product.images}}
+                        <div class="col-3">
+                            <img src="{{this}}" alt="{{../product.name}}" 
+                                 class="img-fluid rounded-2 thumbnail-image" 
+                                 style="height: 100px; width: 100%; object-fit: cover; cursor: pointer;"
+                                 onclick="changeMainImage('{{this}}')">
+                        </div>
+                        {{/each}}
+                    </div>
+                    {{/if}}
+                </div>
+            </div>
+
+            <!-- Product Info -->
+            <div class="col-lg-6">
+                <div class="product-info">
+                    <!-- Product Title & Rating -->
+                    <div class="mb-3">
+                        <h1 class="h2 fw-bold mb-2">{{product.icon}} {{product.name}}</h1>
+                        <div class="d-flex align-items-center mb-2">
+                            <div class="rating me-3">
+                                {{#each product.ratingStars}}
+                                ⭐
+                                {{/each}}
+                                <span class="text-muted ms-1">({{product.rating.average}}/5)</span>
+                            </div>
+                            <span class="text-muted">|</span>
+                            <small class="text-muted ms-3">{{product.rating.count}} đánh giá</small>
+                            <span class="text-muted ms-3">|</span>
+                            <small class="text-muted ms-3">Đã bán: {{product.sold}}</small>
+                        </div>
+                    </div>
+
+                    <!-- Price -->
+                    <div class="price-section mb-4 p-3 rounded-3" style="background: #f0fdf4; border: 2px solid #bbf7d0;">
+                        <div class="d-flex align-items-center">
+                            {{#if product.priceHaveDiscount}}
+                            <span class="product-old-price me-3 fs-5">{{formatMoney product.price}}</span>
+                            <span class="product-price fs-3 fw-bold">{{formatMoney product.priceHaveDiscount}}</span>
+                            {{else}}
+                            <span class="product-price fs-3 fw-bold">{{formatMoney product.price}}</span>
+                            {{/if}}
+                            {{#if product.discount}}
+                            <span class="ms-3 text-danger fw-bold">(Tiết kiệm {{formatMoney (minus product.price product.priceHaveDiscount)}})</span>
+                            {{/if}}
+                        </div>
+                        {{#if product.pricePerKg}}
+                        <small class="text-muted">💰 Giá: {{formatMoney product.pricePerKg}}/kg</small>
+                        {{/if}}
+                    </div>
+
+                    <!-- Product Details -->
+                    <div class="product-details mb-4">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="detail-item p-3 rounded-3" style="background: #fefce8; border: 1px solid #fbbf24;">
+                                    <strong>🌱 Xuất xứ:</strong> {{product.origin}}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="detail-item p-3 rounded-3" style="background: #ecfdf5; border: 1px solid #22c55e;">
+                                    <strong>⚖️ Trọng lượng:</strong> {{product.unit}}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="detail-item p-3 rounded-3" style="background: #fef3c7; border: 1px solid #f59e0b;">
+                                    <strong>📅 Hạn sử dụng:</strong> {{product.expiry}}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="detail-item p-3 rounded-3" style="background: #fce7f3; border: 1px solid #ec4899;">
+                                    <strong>❄️ Bảo quản:</strong> {{product.storage.instructions}}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Vitamins & Nutrition -->
+                    {{#if product.vitamins}}
+                    <div class="nutrition-section mb-4">
+                        <h6 class="fw-bold mb-3">🏥 Dinh dưỡng & Vitamin:</h6>
+                        <div class="d-flex flex-wrap gap-2">
+                            {{#each product.vitamins}}
+                            <span class="vitamin-badge">{{this}}</span>
+                            {{/each}}
+                        </div>
+                    </div>
+                    {{/if}}
+
+                    <!-- Stock Status -->
+                    <div class="stock-section mb-4 p-3 rounded-3 {{#if product.inStock}}bg-success bg-opacity-10 border border-success{{else}}bg-danger bg-opacity-10 border border-danger{{/if}}">
+                        {{#if product.stockQuantity}}
+                        <div class="text-success">
+                            <strong>✅ Còn hàng</strong>
+                        </div>
+                        {{else}}
+                        <div class="text-danger">
+                            <strong>❌ Hết hàng</strong>
+                            <small class="d-block">Sản phẩm tạm thời hết hàng, vui lòng quay lại sau!</small>
+                        </div>
+                        {{/if}}
+                    </div>
+
+                    <!-- Quantity & Add to Cart -->
+                    {{#if product.stockQuantity}}
+                    <div class="purchase-section mb-4">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">🔢 Số lượng:</label>
+                                <div class="quantity-selector d-flex">
+                                    <button class="btn btn-outline-secondary" onclick="decreaseQuantity()">-</button>
+                                    <input type="number" id="quantity" class="form-control text-center mx-2" 
+                                           value="1" min="1" max="{{product.stockQuantity}}" style="max-width: 80px;">
+                                    <button class="btn btn-outline-secondary" onclick="increaseQuantity()">+</button>
+                                </div>
+                            </div>
+                            <div class="col-md-8 d-flex align-items-end">
+                                <div class="d-grid gap-2 w-100">
+                                    <button class="btn btn-primary btn-lg" onclick="addToCart('{{product.id}}', '{{product.name}}')">
+                                        🛒 Thêm vào giỏ hàng
+                                    </button>
+                                    <button class="btn btn-fruit-orange" onclick="buyNow('{{product.id}}')">
+                                        ⚡ Mua ngay
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {{/if}}
+
+                    <!-- Delivery Info -->
+                    <div class="delivery-info p-3 rounded-3" style="background: #f0f9ff; border: 1px solid #0ea5e9;">
+                        <h6 class="fw-bold mb-3">🚚 Thông tin giao hàng:</h6>
+                        <ul class="list-unstyled mb-0">
+                            <li class="mb-2">
+                                <i class="text-success">✅</i> 
+                                <strong>Giao hàng nhanh:</strong> 2-4 giờ tại nội thành Hà Nội
+                            </li>
+                            <li class="mb-2">
+                                <i class="text-success">✅</i> 
+                                <strong>Miễn phí ship:</strong> Đơn hàng từ 200,000đ
+                            </li>
+                            <li class="mb-2">
+                                <i class="text-success">✅</i> 
+                                <strong>Đảm bảo tươi:</strong> Hoàn tiền 100% nếu không tươi ngon
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Product Description -->
+<section class="py-5" style="background: #fafafa;">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="product-description bg-white rounded-3 p-4 shadow-sm">
+                    <ul class="nav nav-tabs" id="productTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="description-tab" data-bs-toggle="tab" 
+                                    data-bs-target="#description" type="button" role="tab">
+                                📝 Mô tả sản phẩm
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="nutrition-tab" data-bs-toggle="tab" 
+                                    data-bs-target="#nutrition" type="button" role="tab">
+                                🏥 Thành phần dinh dưỡng
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="reviews-tab" data-bs-toggle="tab" 
+                                    data-bs-target="#reviews" type="button" role="tab">
+                                ⭐ Đánh giá ({{product.rating.count}})
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="shipping-tab" data-bs-toggle="tab" 
+                                    data-bs-target="#shipping" type="button" role="tab">
+                                🚚 Chính sách giao hàng
+                            </button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content pt-4" id="productTabsContent">
+                        <!-- Description Tab -->
+                        <div class="tab-pane fade show active" id="description" role="tabpanel">
+                            <div class="row">
+                                <div class="col-lg-8">
+                                    <h5 class="mb-3">🍎 Giới thiệu về {{product.name}}</h5>
+                                    <div class="description-content">
+                                        {{#if product.fullDescription}}
+                                        <p>{{product.fullDescription}}</p>
+                                        {{else}}
+                                        <p>{{product.description}}</p>
+                                        {{/if}}
+                                        
+                                        {{#if product.benefits}}
+                                        <h6 class="mt-4 mb-3">✨ Lợi ích nổi bật:</h6>
+                                        <ul>
+                                            {{#each product.benefits}}
+                                            <li class="mb-2">{{this}}</li>
+                                            {{/each}}
+                                        </ul>
+                                        {{/if}}
+
+                                        {{#if product.usage}}
+                                        <h6 class="mt-4 mb-3">🥗 Cách sử dụng:</h6>
+                                        <p>{{product.usage}}</p>
+                                        {{/if}}
+                                    </div>
+                                </div>
+                                <div class="col-lg-4">
+                                    <div class="p-3 rounded-3" style="background: #f0fdf4;">
+                                        <h6 class="fw-bold mb-3">📊 Thông số kỹ thuật</h6>
+                                        <table class="table table-sm">
+                                            <tr>
+                                                <td><strong>Tên sản phẩm:</strong></td>
+                                                <td>{{product.name}}</td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>Xuất xứ:</strong></td>
+                                                <td>{{product.origin}}</td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>Trọng lượng:</strong></td>
+                                                <td>{{product.unit}}</td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>Hạn sử dụng:</strong></td>
+                                                <td>{{product.expiry}}</td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>Bảo quản:</strong></td>
+                                                <td>{{product.storage}}</td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Nutrition Tab -->
+                        <div class="tab-pane fade" id="nutrition" role="tabpanel">
+                            <h5 class="mb-4">🏥 Thành phần dinh dưỡng (trên 100g)</h5>
+                            {{#if product.nutritionFacts}}
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <table class="table">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Thành phần</th>
+                                                <th>Giá trị</th>
+                                                <th>% DV*</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {{#each product.nutritionFacts}}
+                                            <tr>
+                                                <td>{{this.name}}</td>
+                                                <td>{{this.value}}</td>
+                                                <td>{{this.percentage}}%</td>
+                                            </tr>
+                                            {{/each}}
+                                        </tbody>
+                                    </table>
+                                    <small class="text-muted">*%DV = % Giá trị dinh dưỡng hàng ngày</small>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="p-3 rounded-3" style="background: #fef3c7;">
+                                        <h6 class="fw-bold">💡 Lưu ý:</h6>
+                                        <ul class="mb-0">
+                                            <li>Giá trị dinh dưỡng có thể thay đổi tùy vào độ chín và điều kiện bảo quản</li>
+                                            <li>Nên tiêu thụ trong chế độ ăn cân bằng và lối sống lành mạnh</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            {{else}}
+                            <p class="text-muted">Thông tin dinh dưỡng chi tiết đang được cập nhật.</p>
+                            {{/if}}
+                        </div>
+
+                         <!-- Reviews Tab -->
+                        <div class="tab-pane fade" id="reviews" role="tabpanel">
+                            <div class="reviews-section">
+                                <!-- Reviews List -->
+                                {{#if reviewsData}}
+                                <div class="reviews-list">
+                                    {{#each reviewsData}}
+                                    <div class="review-item p-4 mb-3 rounded-3 shadow-sm" style="background: #ffffff; border: 1px solid #e9ecef;">
+                                        <div class="d-flex mb-3">
+                                            <!-- User Avatar -->
+                                            <div class="me-3">
+                                                {{#if this.user.avatar}}
+                                                    <img src="{{this.user.avatar}}" 
+                                                        alt="{{this.user.name}}" 
+                                                        class="rounded-circle" 
+                                                        style="width: 50px; height: 50px; object-fit: cover; border: 2px solid #f8f9fa;">
+                                                {{else}}
+                                                    <div class="rounded-circle d-flex align-items-center justify-content-center" 
+                                                        style="width: 50px; height: 50px; background: linear-gradient(45deg, #667eea 0%, #764ba2 100%); color: white; font-weight: bold; font-size: 18px;">
+                                                        {{substring this.user.name 0 1}}
+                                                    </div>
+                                                {{/if}}
+                                            </div>
+                                            
+                                            <!-- Review Content -->
+                                            <div class="flex-grow-1">
+                                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                                    <div>
+                                                        <h6 class="mb-1 fw-bold text-dark">{{this.user.name}}</h6>
+                                                        <div class="d-flex align-items-center">
+                                                            <div class="rating me-2"
+                                                                {{#times this.rating}}
+                                                                    <span class="text-warning">⭐</span>
+                                                                {{/times}}
+                                                                {{#times (minus 5 this.rating)}}
+                                                                    <span class="text-muted">☆</span>
+                                                                {{/times}}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <small class="text-muted">
+                                                        {{formatDate this.createdAt}}
+                                                    </small>
+                                                </div>
+                                                
+                                                <!-- Review Comment -->
+                                                {{#if this.comment}}
+                                                    <div class="review-comment">
+                                                        <p class="mb-0 text-secondary" style="line-height: 1.6;">
+                                                            "{{this.comment}}"
+                                                        </p>
+                                                    </div>
+                                                {{else}}
+                                                    <div class="review-comment">
+                                                        <p class="mb-0 text-muted fst-italic">
+                                                            Người dùng đã đánh giá nhưng không để lại bình luận.
+                                                        </p>
+                                                    </div>
+                                                {{/if}}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {{/each}}
+                                    
+                                    <!-- Load More Button -->
+                                    {{#if hasMoreReviews}}
+                                    <div class="text-center mt-4">
+                                        <button class="btn btn-outline-primary" onclick="loadMoreReviews()">
+                                            Xem thêm đánh giá
+                                        </button>
+                                    </div>
+                                    {{/if}}
+                                </div>
+                                {{else}}
+                                <div class="text-center py-5">
+                                    <div style="font-size: 4rem;" class="mb-3">📝</div>
+                                    <h5 class="mt-3 text-dark">Chưa có đánh giá nào</h5>
+                                    <p class="text-muted mb-4">Hãy là người đầu tiên đánh giá sản phẩm này!</p>
+                                    <button class="btn btn-primary">
+                                        Viết đánh giá đầu tiên
+                                    </button>
+                                </div>
+                                {{/if}}
+                            </div>
+                        </div>
+
+                        <!-- Shipping Tab -->
+                        <div class="tab-pane fade" id="shipping" role="tabpanel">
+                            <h5 class="mb-4">🚚 Chính sách giao hàng & đổi trả</h5>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="shipping-info">
+                                        <h6 class="fw-bold mb-3">📦 Giao hàng:</h6>
+                                        <ul class="list-unstyled">
+                                            <li class="mb-2">✅ Giao hàng nhanh 2-4h tại nội thành</li>
+                                            <li class="mb-2">✅ Giao hàng toàn quốc trong 1-3 ngày</li>
+                                            <li class="mb-2">✅ Miễn phí ship đơn từ 200,000đ</li>
+                                            <li class="mb-2">✅ Đóng gói cẩn thận, đảm bảo chất lượng</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="return-policy">
+                                        <h6 class="fw-bold mb-3">🔄 Chính sách đổi trả:</h6>
+                                        <ul class="list-unstyled">
+                                            <li class="mb-2">🛡️ Đổi trả trong 24h nếu không tươi ngon</li>
+                                            <li class="mb-2">💯 Hoàn tiền 100% nếu không hài lòng</li>
+                                            <li class="mb-2">📞 Hỗ trợ khách hàng 24/7</li>
+                                            <li class="mb-2">⚡ Xử lý khiếu nại nhanh chóng</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Related Products -->
+{{#if relatedProducts}}
+<section class="py-5">
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col-12 text-center">
+                <h3 class="fw-bold">🍇 Sản phẩm liên quan</h3>
+                <p class="text-muted">Những trái cây tươi ngon khác bạn có thể thích</p>
+            </div>
+        </div>
+        <div class="row">
+            {{#each relatedProducts}}
+            <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+                <div class="product-card position-relative h-100">
+                    {{#if this.discount}}
+                    <div class="discount-badge">🔥-{{this.discount}}%</div>
+                    {{/if}}
+                    {{#if this.isFresh}}
+                    <div class="fresh-badge">✨ Tươi ngon</div>
+                    {{/if}}
+                    
+                    <div class="position-relative overflow-hidden">
+                        <img src="{{this.image}}" alt="{{this.name}}" class="product-image">
+                    </div>
+                    
+                    <div class="p-3">
+                        <div class="rating mb-2">
+                            {{#each this.ratingStars}}
+                            ⭐
+                            {{/each}}
+                            <small class="text-muted ms-1">({{this.reviewCount}})</small>
+                        </div>
+                        
+                        <h6 class="product-title">{{this.icon}} {{this.name}}</h6>
+                        
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div>
+                                {{#if this.oldPrice}}
+                                <span class="product-old-price me-2">{{formatPrice this.oldPrice}}</span>
+                                {{/if}}
+                                <span class="product-price">{{formatPrice this.price}}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <a href="/product/{{this.slug}}" class="btn btn-outline-primary">
+                                👁️ Xem chi tiết
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {{/each}}
+        </div>
+    </div>
+</section>
+{{/if}}
+
+<script>
+// Change main image when clicking thumbnail
+function changeMainImage(imageSrc) {
+    document.getElementById('mainImage').src = imageSrc;
+}
+
+// Quantity controls
+function increaseQuantity() {
+    const quantityInput = document.getElementById('quantity');
+    const currentValue = parseInt(quantityInput.value);
+    const maxValue = parseInt(quantityInput.max);
+    
+    if (currentValue < maxValue) {
+        quantityInput.value = currentValue + 1;
+    }
+}
+
+function decreaseQuantity() {
+    const quantityInput = document.getElementById('quantity');
+    const currentValue = parseInt(quantityInput.value);
+    
+    if (currentValue > 1) {
+        quantityInput.value = currentValue - 1;
+    }
+}
+
+// Add to cart with quantity
+function addToCart(productId, productName) {
+    const quantity = document.getElementById('quantity').value;
+    alert(`🛒 Đã thêm ${quantity}kg ${productName} vào giỏ hàng!`);
+    // Here you would make an AJAX call to add to cart
+}
+
+// Buy now function
+function buyNow(productId) {
+    const quantity = document.getElementById('quantity').value;
+    alert(`⚡ Chuyển đến trang thanh toán...`);
+    // Redirect to checkout page
+    // window.location.href = `/checkout?product=${productId}&quantity=${quantity}`;
+}
+
+// Toggle wishlist
+function toggleWishlist(productId) {
+    const button = event.target.closest('button');
+    const icon = button.innerHTML;
+    
+    if (icon.includes('❤️')) {
+        button.innerHTML = '💔';
+        button.style.color = '#6b7280';
+        alert('💔 Đã xóa khỏi danh sách yêu thích');
+    } else {
+        button.innerHTML = '❤️';
+        button.style.color = '#ef4444';
+        alert('❤️ Đã thêm vào danh sách yêu thích');
+    }
+}
+
+// Smooth scroll for anchor links
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize Bootstrap tabs
+    const triggerTabList = [].slice.call(document.querySelectorAll('#productTabs button'));
+    triggerTabList.forEach(function(triggerEl) {
+        const tabTrigger = new bootstrap.Tab(triggerEl);
+    });
+
+    // Ẩn các đánh giá từ index 3 trở đi
+    const reviewItems = document.querySelectorAll('.review-item');
+    if (reviewItems.length > 3) {
+        for (let i = 3; i < reviewItems.length; i++) {
+            reviewItems[i].style.display = 'none';
+        }
+        // Hiển thị nút "Xem thêm" nếu có hơn 3 đánh giá
+        const loadMoreBtn = document.querySelector('.btn-outline-primary');
+        if (loadMoreBtn) loadMoreBtn.style.display = 'block';
+    }
+
+    // Xử lý nút "Xem thêm"
+    window.loadMoreReviews = function() {
+        const reviewItems = document.querySelectorAll('.review-item');
+        let allShown = true;
+
+        reviewItems.forEach(item => {
+            if (item.style.display === 'none') {
+                item.style.display = 'block';
+                allShown = false;
+            }
+        });
+
+        // Ẩn nút "Xem thêm" nếu tất cả đã hiển thị
+        if (allShown) {
+            const loadMoreBtn = document.querySelector('.btn-outline-primary');
+            if (loadMoreBtn) loadMoreBtn.style.display = 'none';
+        }
+    };
+});
+</script>

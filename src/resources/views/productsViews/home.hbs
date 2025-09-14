@@ -1,0 +1,405 @@
+{{!-- Sử dụng layout product.hbs --}}
+{{!< layout/product}}
+
+<!-- Hero Section -->
+<section class="hero-fruit-bg py-5 mb-5">
+    <div class="container text-center text-white">
+        <h1 class="display-4 fw-bold mb-3">Chào Mừng Đến Với Cửa Hàng Trái Cây Tươi <span class="fruit-icon">🍎</span></h1>
+        <p class="lead mb-4">Khám phá những loại trái cây tươi ngon, hữu cơ và chất lượng cao nhất từ Việt Nam và nhập khẩu!</p>
+        <a href="/products" class="btn btn-primary btn-lg">
+            <i class="fas fa-shopping-basket me-2"></i>Mua Sắm Ngay
+        </a>
+    </div>
+</section>
+
+<!-- Sản Phẩm Nổi Bật -->
+<section class="container mb-5">
+    <div class="row align-items-center mb-4">
+        <div class="col-md-8">
+            <h2 class="mb-0">
+                <span class="fruit-icon">🌟</span> Sản Phẩm Nổi Bật
+            </h2>
+            <p class="text-muted mb-0">Những sản phẩm được chọn lọc đặc biệt</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="/products?featured=true" class="btn btn-outline-primary">
+                Xem tất cả <i class="fas fa-arrow-right ms-1"></i>
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        {{#each featuredProducts}}
+        <div class="col-lg-2-4 col-md-4 col-sm-6 mb-4">
+            <div class="product-card position-relative h-100">
+                <span class="fresh-badge featured-badge">Nổi Bật</span>
+                {{#if this.discount}}
+                <span class="discount-badge">-{{this.discount}}%</span>
+                {{/if}}
+                
+                <a href="/products/{{this.slug}}" class="text-decoration-none">
+                    <img src="{{this.imageURL.[0].thumbnail}}" class="product-image" alt="{{this.name}}" 
+                         onerror="this.src='/images/placeholder-fruit.jpg'">
+                </a>
+                
+                <div class="p-3">
+                    <a href="/products/{{this.slug}}" class="text-decoration-none">
+                        <h3 class="product-title">{{this.name}}</h3>
+                    </a>
+                    
+                    <div class="rating mb-2">
+                        {{#times this.rating.average}}
+                        <i class="fas fa-star text-warning"></i>
+                        {{/times}}
+                        {{#times (minus 5 this.rating.average)}}
+                        <i class="far fa-star text-warning"></i>
+                        {{/times}}
+                        <span class="text-muted small ms-1">({{this.rating.count}})</span>
+                    </div>
+                    
+                    <div class="price-section mb-3">
+                        <div class="d-flex align-items-center">
+                            {{#if (gt this.priceHaveDiscount 0)}}
+                                <span class="product-price fw-bold">{{formatMoney this.priceHaveDiscount}}</span>
+                                <span class="product-old-price ms-2">{{formatMoney this.price}}</span>
+                            {{else}}
+                                <span class="product-price fw-bold">{{formatMoney this.price}}</span>
+                            {{/if}}
+                        </div>
+                        {{#if this.isOrganic}}
+                        <span class="organic-badge">Hữu cơ</span>
+                        {{/if}}
+                    </div>
+                    
+                    <p class="text-muted small mb-3">{{truncate this.description 60}}</p>
+                    
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-primary btn-sm" onclick="addToCart('{{this._id}}', '{{this.name}}')">
+                            <i class="fas fa-shopping-cart me-1"></i> Thêm vào giỏ
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {{/each}}
+    </div>
+</section>
+
+<!-- Sản Phẩm Giảm Giá -->
+<section class="container mb-5">
+    <div class="row align-items-center mb-4">
+        <div class="col-md-8">
+            <h2 class="mb-0">
+                <span class="fruit-icon">🔥</span> Sản Phẩm Giảm Giá
+            </h2>
+            <p class="text-muted mb-0">Cơ hội tiết kiệm tuyệt vời cho bạn</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="/products?discount=true" class="btn btn-outline-danger">
+                Xem tất cả <i class="fas fa-arrow-right ms-1"></i>
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        {{#each discountProducts}}
+        <div class="col-lg-2-4 col-md-4 col-sm-6 mb-4">
+            <div class="product-card position-relative h-100">
+                <span class="fresh-badge sale-badge">Giảm Giá</span>
+                <span class="discount-badge big-discount">-{{this.discount}}%</span>
+                
+                <a href="/products/{{this.slug}}" class="text-decoration-none">
+                    <img src="{{this.imageURL.[0].thumbnail}}" class="product-image" alt="{{this.name}}" 
+                         onerror="this.src='/images/placeholder-fruit.jpg'">
+                </a>
+                
+                <div class="p-3">
+                    <a href="/products/{{this.slug}}" class="text-decoration-none">
+                        <h3 class="product-title">{{this.name}}</h3>
+                    </a>
+                    
+                    <div class="rating mb-2">
+                        {{#times this.rating.average}}
+                        <i class="fas fa-star text-warning"></i>
+                        {{/times}}
+                        {{#times (minus 5 this.rating.average)}}
+                        <i class="far fa-star text-warning"></i>
+                        {{/times}}
+                        <span class="text-muted small ms-1">({{this.rating.cound}})</span>
+                    </div>
+                    
+                    <div class="price-section mb-3">
+                        <div class="d-flex align-items-center flex-wrap">
+                            <span class="product-price fw-bold text-danger">{{formatMoney this.priceHaveDiscount}}</span>
+                            <span class="product-old-price ms-2">{{formatMoney this.price}}</span>
+                        </div>
+                        <div class="savings-amount text-success small">
+                            Tiết kiệm: {{formatMoney (minus this.price this.priceHaveDiscount)}}
+                        </div>
+                    </div>
+                    
+                    <p class="text-muted small mb-3">{{truncate this.description 60}}</p>
+                    
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-danger btn-sm" onclick="addToCart('{{this._id}}', '{{this.name}}')">
+                            <i class="fas fa-shopping-cart me-1"></i> Mua Ngay
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {{/each}}
+    </div>
+</section>
+
+<!-- Sản Phẩm Được Mua Nhiều Nhất -->
+<section class="container mb-5">
+    <div class="row align-items-center mb-4">
+        <div class="col-md-8">
+            <h2 class="mb-0">
+                <span class="fruit-icon">🛒</span> Sản Phẩm Được Mua Nhiều Nhất
+            </h2>
+            <p class="text-muted mb-0">Lựa chọn hàng đầu của khách hàng</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="/products?bestseller=true" class="btn btn-outline-success">
+                Xem tất cả <i class="fas fa-arrow-right ms-1"></i>
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        {{#each bestSellerProducts}}
+        <div class="col-lg-2-4 col-md-4 col-sm-6 mb-4">
+            <div class="product-card position-relative h-100">
+                <span class="fresh-badge bestseller-badge">Bán Chạy #{{plus @index 1}}</span>
+                {{#if this.discount}}
+                <span class="discount-badge">-{{this.discount}}%</span>
+                {{/if}}
+                
+                <a href="/products/{{this.slug}}" class="text-decoration-none">
+                    <img src="{{this.imageURL.[0].thumbnail}}" class="product-image" alt="{{this.name}}" 
+                         onerror="this.src='/images/placeholder-fruit.jpg'">
+                </a>
+                
+                <div class="p-3">
+                    <a href="/products/{{this.slug}}" class="text-decoration-none">
+                        <h3 class="product-title">{{this.name}}</h3>
+                    </a>
+                    
+                    <div class="rating mb-2">
+                        {{#times this.rating.average}}
+                        <i class="fas fa-star text-warning"></i>
+                        {{/times}}
+                        {{#times (minus 5 this.rating.average)}}
+                        <i class="far fa-star text-warning"></i>
+                        {{/times}}
+                        <span class="text-muted small ms-1">({{this.rating.count}})</span>
+                    </div>
+                    
+                    <div class="price-section mb-3">
+                        <div class="d-flex align-items-center flex-wrap">
+                            {{#if (gt this.priceHaveDiscount 0)}}
+                                <span class="product-price fw-bold">{{formatMoney this.priceHaveDiscount}}</span>
+                                <span class="product-old-price ms-2">{{formatMoney this.price}}</span>
+                            {{else}}
+                                <span class="product-price fw-bold">{{formatMoney this.price}}</span>
+                            {{/if}}
+                        </div>
+                        <div class="sold-count text-success small">
+                            <i class="fas fa-fire me-1"></i>Đã bán: {{this.sold}} sản phẩm
+                        </div>
+                    </div>
+                    
+                    <p class="text-muted small mb-3">{{truncate this.description 60}}</p>
+                    
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-success btn-sm" onclick="addToCart('{{this._id}}', '{{this.name}}')">
+                            <i class="fas fa-shopping-cart me-1"></i> Thêm vào giỏ
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {{/each}}
+    </div>
+</section>
+
+<!-- Newsletter Section -->
+{{#if user}}
+    <section class="container mb-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="newsletter-card text-center p-5 rounded-4" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <h3 class="text-white mb-3">🎉 Đăng Ký Nhận Ưu Đãi Đặc Biệt</h3>
+                    <p class="text-white mb-4">Nhận ngay mã giảm giá 10% cho đơn hàng đầu tiên và cập nhật sản phẩm mới nhất!</p>
+                    <form class="d-flex gap-3 justify-content-center" onsubmit="subscribeNewsletter(event)">
+                        <input type="email" class="form-control" placeholder="Nhập email của bạn..." required style="max-width: 300px;">
+                        <button type="submit" class="btn btn-light fw-bold px-4">
+                            Đăng Ký
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+{{/if}}
+
+<style>
+/* Custom Grid for 5 columns */
+@media (min-width: 992px) {
+    .col-lg-2-4 {
+        flex: 0 0 auto;
+        width: 20%;
+    }
+}
+
+/* Badge Styles */
+.featured-badge {
+    background: linear-gradient(45deg, #ff6b6b, #feca57) !important;
+}
+
+.sale-badge {
+    background: linear-gradient(45deg, #ee5a52, #f38ba8) !important;
+}
+
+.bestseller-badge {
+    background: linear-gradient(45deg, #48cae4, #023e8a) !important;
+    color: white !important;
+}
+
+.big-discount {
+    font-size: 14px !important;
+    font-weight: bold !important;
+    background: #dc3545 !important;
+}
+
+/* Price and Info Styles */
+.savings-amount {
+    font-weight: 600;
+}
+
+.sold-count {
+    font-weight: 600;
+}
+
+.product-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+.newsletter-card {
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .col-lg-2-4 {
+        width: 50%;
+    }
+    
+    .hero-fruit-bg h1 {
+        font-size: 2rem !important;
+    }
+    
+    .newsletter-card form {
+        flex-direction: column !important;
+    }
+    
+    .newsletter-card input {
+        max-width: 100% !important;
+    }
+}
+</style>
+
+<script>
+// Add to cart function
+async function addToCart(productId, productName) {
+    try{
+        const res = await fetch('/cart/add', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+            body: JSON.stringify({
+                productId,
+                quantity: 1
+            }),
+        });
+
+        const data = await res.json();
+
+        if (!data.success) {
+            alert('Không thể thêm vào giỏ: ' + data.message);
+            return
+        }
+        updateCartCount(); 
+        showCartToast(productName);
+    } catch (err){
+        alert('❌ Lỗi khi thêm vào giỏ hàng!');
+        console.error(err);
+    }
+}
+
+function showCartToast(productName) {
+    // Create toast element if it doesn't exist
+    let toastContainer = document.querySelector('.toast-container');
+    if (!toastContainer) {
+        toastContainer = document.createElement('div');
+        toastContainer.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+        document.body.appendChild(toastContainer);
+    }
+
+    // Create toast
+    const toast = document.createElement('div');
+    toast.className = 'toast align-items-center text-white bg-primary border-0';
+    toast.setAttribute('role', 'alert');
+    toast.setAttribute('aria-live', 'assertive');
+    toast.setAttribute('aria-atomic', 'true');
+
+    toast.innerHTML = `
+        <div class="d-flex">
+            <div class="toast-body">
+                🛒 Đã thêm "${productName}" vào giỏ hàng!
+            </div>
+            <button type="button" class="btn–
+
+close close-toast btn-light" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+    `;
+    toastContainer.appendChild(toast);
+
+    // Initialize and show toast using Bootstrap
+    const bootstrapToast = new bootstrap.Toast(toast, { delay: 3000 });
+    bootstrapToast.show();
+
+    // Remove toast from DOM after hiding
+    toast.addEventListener('hidden.bs.toast', () => {
+        toast.remove();
+    });
+}
+
+// Newsletter subscription
+function subscribeNewsletter(event) {
+    event.preventDefault();
+    const email = event.target.querySelector('input[type="email"]').value;
+    
+    // Implementation for newsletter subscription
+    console.log('Subscribing email:', email);
+    
+    Swal.fire({
+        icon: 'success',
+        title: 'Đăng ký thành công!',
+        text: 'Chúng tôi sẽ gửi ưu đãi đặc biệt đến email của bạn',
+        timer: 2000,
+        showConfirmButton: false
+    });
+    
+    event.target.reset();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    updateCartCount();
+});
+</script>

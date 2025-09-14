@@ -18,8 +18,13 @@ class AuthController{
     // [POST] /auth/register
     register(req, res, next){
         const user = new User(req.body);
+        // default avatar
+        user.avatar = {
+            url: 'http://localhost:9000/image-ecommerce/default-avatar.jpg',
+            publicId: 'default-avatar.jpg',
+        };
         console.log(user.password);
-        User.findOne({username: user.username})
+        User.findOne({username: user.username}, {email: user.email})
             .then((exisingUser) => {
                 // Kiểm tra tên người dùng
                 if(exisingUser) return res.status(403).json({
@@ -96,13 +101,17 @@ class AuthController{
                         const accessToken = generateAccessToken({
                             id: user._id,
                             username: user.username,
-                            role: user.role
+                            name: user.name,
+                            role: user.role,
+                            avatar: user.avatar.url,
                         });
                         // Tạo refreshToken cho user
                         const refreshToken = generateRefreshToken({
                             id: user._id,
                             username: user.username,
-                            role: user.role
+                            name: user.name,
+                            role: user.role,
+                            avatar: user.avatar.url,
                         });
 
                         // Đưa refreshToken vào DB
@@ -135,6 +144,7 @@ class AuthController{
                                 id: user._id,
                                 username: user.username,
                                 role: user.role,
+                                avatar: user.avatar.url,
                             },
                             })
                         })
@@ -395,7 +405,9 @@ class AuthController{
                     const userPayload = {
                         id: user.id,
                         username: user.username,
-                        role: user.role
+                        role: user.role,
+                        avatar: user.avatar.url,
+
                     }
 
                     const newAccessToken = generateAccessToken(userPayload);

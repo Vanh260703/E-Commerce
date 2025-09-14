@@ -1,0 +1,342 @@
+{{#> admin-layout title="Quản lý danh mục" isCategories=true}}
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-tags me-2"></i>Danh sách danh mục
+                    </h5>
+                    <div class="input-group" style="width: 300px;">
+                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                        <input type="text" class="form-control" id="searchCategory" placeholder="Tìm kiếm danh mục...">
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Tên danh mục</th>
+                                <th>Slug</th>
+                                <th>Mô tả</th>
+                                <th>Số sản phẩm</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="categoriesTableBody">
+                            {{#each categories}}
+                            <tr data-category-id="{{this._id}}">
+                                <td>
+                                    <span class="text-muted">{{this.name}}</span>
+                                </td>
+                                <td>
+                                    <span class="text-muted">{{this.slug}}</span>
+                                </td>
+                                <td>
+                                    <span class="text-muted">{{truncate this.description 50}}</span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-info">{{this.productCount}} sản phẩm</span>
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <button class="btn btn-sm btn-outline-warning" onclick="editCategory('{{this._id}}')">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger" 
+                                                onclick="confirmDelete('/admin/categories/{{this._id}}', '{{this.name}}')">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {{/each}}
+                        </tbody>
+                    </table>
+                </div>
+
+                {{#unless categories}}
+                <div class="text-center py-5">
+                    <i class="fas fa-tags fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">Chưa có danh mục nào</h5>
+                    <p class="text-muted">Hãy thêm danh mục đầu tiên cho cửa hàng của bạn</p>
+                </div>
+                {{/unless}}
+            </div>
+        </div>
+    </div>
+
+    <!-- Add New Category -->
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="fas fa-plus me-2"></i>Thêm danh mục mới
+                </h5>
+                
+                <form id="addCategoryForm">
+                    <div class="mb-3">
+                        <label class="form-label">Tên danh mục *</label>
+                        <input type="text" class="form-control" name="name" required 
+                               placeholder="Ví dụ: Trái cây tươi">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Slug</label>
+                        <input type="text" class="form-control" name="slug" readonly 
+                               placeholder="Sẽ tự động tạo từ tên danh mục">
+                        <div class="form-text">URL thân thiện, tự động tạo từ tên danh mục</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Mô tả</label>
+                        <textarea class="form-control" name="description" rows="3" 
+                                  placeholder="Mô tả ngắn về danh mục này..."></textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="isActive" checked>
+                            <label class="form-check-label">Kích hoạt danh mục</label>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-save me-2"></i>Thêm danh mục
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Category Statistics -->
+        <div class="card mt-4">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="fas fa-chart-pie me-2"></i>Thống kê danh mục
+                </h5>
+                
+                <div class="row text-center">
+                    <div class="col-6">
+                        <div class="border-end">
+                            <h3 class="text-primary mb-0">{{categories.length}}</h3>
+                            <small class="text-muted">Tổng danh mục</small>
+                        </div>
+                    </div>
+                </div>
+                <hr>                
+                <div class="mb-2">
+                    <div class="d-flex justify-content-between">
+                        <small>Có sản phẩm</small>
+                        <small>{{categoriesWithProducts}}/{{totalCategories}}</small>
+                    </div>
+                    <div class="progress" style="height: 6px;">
+                        <div class="progress-bar bg-success" 
+                             style="width: {{percentage categoriesWithProducts totalCategories}}%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Category Modal -->
+<div class="modal fade" id="editCategoryModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-edit me-2"></i>Cập nhật danh mục
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="editCategoryForm">
+                <div class="modal-body">
+                    <input type="hidden" name="categoryId" id="editCategoryId">
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Tên danh mục *</label>
+                        <input type="text" class="form-control" name="name" id="editCategoryName" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Slug *</label>
+                        <input type="text" class="form-control" name="slug" id="editCategorySlug" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Mô tả</label>
+                        <textarea class="form-control" name="description" id="editCategoryDescription" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-warning">
+                        <i class="fas fa-save me-2"></i>Cập nhật
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+// Auto generate slug from name
+document.querySelector('input[name="name"]').addEventListener('input', (e) => {
+    const name = e.target.value;
+    const slug = name.toLowerCase()
+                    .normalize('NFD')
+                    .replace(/[\u0300-\u036f]/g, '')
+                    .replace(/[đĐ]/g, 'd')
+                    .replace(/[^a-z0-9\s]/g, '')
+                    .replace(/\s+/g, '-')
+                    .replace(/^-+|-+$/g, '');
+    document.querySelector('input[name="slug"]').value = slug;
+});
+
+// Add Category Form Submit
+document.getElementById('addCategoryForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const data = Object.fromEntries(formData.entries());
+    
+    // Convert checkbox to boolean
+    data.isActive = formData.has('isActive');
+    
+    try {
+        const response = await fetch('/admin/categories', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showToast('success', result.message);
+            e.target.reset();
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            showToast('error', result.message);
+        }
+    } catch (error) {
+        console.log(error);
+        showToast('error', 'Có lỗi xảy ra khi thêm danh mục!');
+    }
+});
+
+// Edit Category
+async function editCategory(categoryId) {
+    try {
+        const row = document.querySelector(`tr[data-category-id="${categoryId}"]`);
+        if (!row) return;
+
+        // Dựa theo thứ tự các <td> trong <tr>
+        const categoryName = row.children[0].textContent.trim();
+        const categorySlug = row.children[1].textContent.trim();
+        const categoryDesc = row.children[2].textContent.trim();
+
+        // Populate dữ liệu vào modal
+        document.getElementById('editCategoryId').value = categoryId;
+        document.getElementById('editCategoryName').value = categoryName;
+        document.getElementById('editCategorySlug').value = categorySlug;
+        document.getElementById('editCategoryDescription').value = categoryDesc;
+
+        // Show modal
+        new bootstrap.Modal(document.getElementById('editCategoryModal')).show();
+    } catch (error) {
+        console.log(error);
+        showToast('error', 'Có lỗi xảy ra khi tải thông tin danh mục!');
+    }
+ }
+
+// Auto generate slug for edit form
+document.getElementById('editCategoryName').addEventListener('input', (e) => {
+    const name = e.target.value;
+    const slug = name.toLowerCase()
+                    .normalize('NFD')
+                    .replace(/[\u0300-\u036f]/g, '')
+                    .replace(/[đĐ]/g, 'd')
+                    .replace(/[^a-z0-9\s]/g, '')
+                    .replace(/\s+/g, '-')
+                    .replace(/^-+|-+$/g, '');
+    document.getElementById('editCategorySlug').value = slug;
+});
+
+// Edit Category Form Submit
+document.getElementById('editCategoryForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const data = Object.fromEntries(formData.entries());
+    const categoryId = data.categoryId;
+    
+    // Convert checkbox to boolean
+    data.isActive = formData.has('isActive');
+    
+    // Remove categoryId from data
+    delete data.categoryId;
+    
+    try {
+        const response = await fetch(`/admin/categories/${categoryId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showToast('success', result.message);
+            bootstrap.Modal.getInstance(document.getElementById('editCategoryModal')).hide();
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            showToast('error', result.message);
+        }
+    } catch (error) {
+        showToast('error', 'Có lỗi xảy ra khi cập nhật danh mục!');
+    }
+});
+
+// Search functionality
+document.getElementById('searchCategory').addEventListener('input', (e) => {
+    const searchTerm = e.target.value.toLowerCase();
+    const rows = document.querySelectorAll('#categoriesTableBody tr');
+    
+    rows.forEach(row => {
+        const categoryName = row.querySelector('strong').textContent.toLowerCase();
+        const categorySlug = row.querySelector('code').textContent.toLowerCase();
+        
+        if (categoryName.includes(searchTerm) || categorySlug.includes(searchTerm)) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+});
+
+// Helper function to truncate text
+function truncate(text, length) {
+    if (!text) return '';
+    return text.length > length ? text.substring(0, length) + '...' : text;
+}
+
+// Helper function to format date
+function formatDate(dateString) {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('vi-VN');
+}
+
+// Helper function to calculate percentage
+function percentage(value, total) {
+    if (!total || total === 0) return 0;
+    return Math.round((value / total) * 100);
+}
+</script>
+
+{{/admin-layout}}

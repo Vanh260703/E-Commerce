@@ -534,6 +534,101 @@
             color: #666;
             margin-top: 5px;
         }
+
+        .payment-status.paid {
+            color: #28a745;
+            font-weight: 500;
+        }
+
+        .payment-status.unpaid {
+            color: #dc3545;
+            font-weight: 500;
+        }
+
+        .payment-warning {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 12px;
+            color: #856404;
+            font-size: 14px;
+            line-height: 1.4;
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+        }
+
+        .payment-warning i {
+            color: #f39c12;
+            margin-top: 2px;
+            font-size: 16px;
+        }
+
+        .btn-payment {
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 13px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+            font-weight: 500;
+            min-width: 140px;
+            justify-content: center;
+        }
+
+        .btn-payment:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .btn-payment:disabled {
+            cursor: not-allowed;
+            opacity: 0.6;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-payment.momo {
+            background: linear-gradient(45deg, #a50064, #d82d8b);
+            color: white;
+        }
+
+        .btn-payment.momo:hover:not(:disabled) {
+            background: linear-gradient(45deg, #8a0054, #c41f7a);
+        }
+
+        .btn-payment.vnpay {
+            background: linear-gradient(45deg, #1e88e5, #42a5f5);
+            color: white;
+        }
+
+        .btn-payment.vnpay:hover:not(:disabled) {
+            background: linear-gradient(45deg, #1976d2, #2196f3);
+        }
+
+        .btn-payment.cod {
+            background: linear-gradient(45deg, #43a047, #66bb6a);
+            color: white;
+        }
+
+        .btn-payment.cod:hover:not(:disabled) {
+            background: linear-gradient(45deg, #388e3c, #4caf50);
+        }
+
+        @media (max-width: 768px) {
+            .payment-options {
+                flex-direction: column;
+            }
+            
+            .btn-payment {
+                width: 100%;
+                min-width: auto;
+            }
+        }
     </style>
 </head>
 <body>
@@ -563,13 +658,13 @@
         <!-- Sidebar -->
         <div class="profile-sidebar">
             <div class="profile-avatar">
-                <img src="{{userData.avatar.url}}" alt="Avatar" id="userAvatar">
+                <img src="{{user.avatar.url}}" alt="Avatar" id="userAvatar">
                 <div class="avatar-upload">
                     <i class="fas fa-camera"></i> Cập nhật ảnh
                 </div>
             </div>
-            <div class="profile-name">{{userData.name}}</div>
-            <div class="profile-role">{{userData.role}}</div>
+            <div class="profile-name">{{profileData.name}}</div>
+            <div class="profile-role">{{profileData.role}}</div>
             <ul class="profile-menu">
                 <li>
                     <a href="#info" onclick="loadContent('profile')" class="active">
@@ -578,7 +673,7 @@
                 </li>
                 <li>
                     <a href="#orders" onclick="loadContent('orders')">
-                        <i class="fas fa-shopping-bag"></i> Đơn hàng của tôi
+                        <i class="fas fa-shopping-bag"></i> Đơn hàng gần đây
                     </a>
                 </li>
                 <li>
@@ -594,6 +689,16 @@
                 <li>
                     <a href="#password" onclick="loadContent('password')">
                         <i class="fas fa-key"></i> Đổi mật khẩu
+                    </a>
+                </li>
+                <!-- Divider line -->
+                <li style="margin: 15px 0;">
+                    <div style="height: 1px; background: rgba(255,255,255,0.2);"></div>
+                </li>
+                <!-- Nút quay về trang chủ -->
+                <li>
+                    <a href="/products">
+                        <i class="fas fa-home"></i> Quay về trang chủ
                     </a>
                 </li>
                 <li>
@@ -619,19 +724,19 @@
                     <div class="info-grid">
                         <div class="info-item">
                             <div class="info-label">Họ và tên</div>
-                            <div class="info-value">{{userData.name}}</div>
+                            <div class="info-value">{{user.name}}</div>
                         </div>
 
                         <div class="info-item">
                             <div class="info-label">Tên đăng nhập</div>
-                            <div class="info-value">{{userData.username}}</div>
+                            <div class="info-value">{{user.username}}</div>
                         </div>
 
                         <div class="info-item">
                             <div class="info-label">Email</div>
-                            <div class="info-value {{#if userData.isVerified}}verified{{else}}not-verified{{/if}}">
-                                {{userData.email}}
-                                {{#if userData.isVerified}}
+                            <div class="info-value {{#if user.isVerified}}verified{{else}}not-verified{{/if}}">
+                                {{user.email}}
+                                {{#if user.isVerified}}
                                     <i class="fas fa-check-circle"></i>
                                 {{else}}
                                     <i class="fas fa-exclamation-circle"></i>
@@ -641,22 +746,22 @@
 
                         <div class="info-item">
                             <div class="info-label">Số điện thoại</div>
-                            <div class="info-value">{{userData.phone}}</div>
+                            <div class="info-value">{{user.phone}}</div>
                         </div>
 
                         <div class="info-item">
                             <div class="info-label">Giới tính</div>
                             <div class="info-value">
-                                {{#if (eq userData.gender "male")}} Nam
-                                {{else if ( eq userData.gender "female" )}} Nữ
-                                {{else if ( eq userData.gender "other" )}} Khác
+                                {{#if (eq user.gender "male")}} Nam
+                                {{else if ( eq user.gender "female" )}} Nữ
+                                {{else if ( eq user.gender "other" )}} Khác
                                 {{/if}}
                             </div>
                         </div>
 
                         <div class="info-item">
                             <div class="info-label">Ngày sinh</div>
-                            <div class="info-value">{{formatDate userData.birthday}}</div>
+                            <div class="info-value">{{formatDate user.dateOfBirth}}</div>
                         </div>
                     </div>
                 </div>
@@ -669,7 +774,7 @@
                         </button>
                     </div>
                     <div class="address-list">
-                        {{#each userData.addresses}}
+                        {{#each user.addresses}}
                         <div class="address-card">
                             {{#if isDefault}}
                             <div class="default-badge">Mặc định</div>
@@ -730,6 +835,83 @@
                         </form>
                     </div>
                 </div>
+                <!-- Orders Content -->
+                <div id="ordersContent" style="display: none;">
+                    <div class="section-title">
+                        Đơn hàng của tôi
+                    </div>
+                    <div class="orders-list">
+                        {{#if recentOrders.length}}
+                            {{#each recentOrders}}
+                            <div class="order-card">
+                                <div class="order-header">
+                                    <span class="order-id">Mã đơn: {{this._id}}</span>
+                                    {{!-- <span class="order-status status-{{status}}">{{status}}</span> --}}
+                                </div>
+                                <div class="order-body">
+                                    <div class="order-info">
+                                        <div><strong>Ngày đặt:</strong> {{formatDate createdAt}}</div>
+                                        <div><strong>Tổng tiền:</strong> {{formatCurrency totalAmount}}</div>
+                                        <div><strong>Phương thức:</strong> 
+                                            {{#if (eq paymentMethod "cod")}}
+                                                Thanh toán khi nhận hàng
+                                            {{else}}
+                                                Chuyển khoản
+                                                {{#if isPaid}}
+                                                    <span class="payment-status paid"> - Đã thanh toán</span>
+                                                {{else}}
+                                                    <span class="payment-status unpaid"> - Chưa thanh toán</span>
+                                                {{/if}}
+                                            {{/if}}
+                                        </div>
+                                        <div><strong>Địa chỉ giao:</strong> {{deliveryAddress}}</div>
+                                    </div>
+                                    <div class="order-items">
+                                        {{#each items}}
+                                        <div class="order-item">
+                                            <span class="item-name">{{product.name}}</span>
+                                            <span class="item-qty">x{{quantity}}</span>
+                                            <span class="item-price">{{formatCurrency price}}</span>
+                                        </div>
+                                        {{/each}}
+                                    </div>
+                                </div>
+                                <div class="order-footer">
+                                      {{#if (eq paymentMethod "banking")}}
+                                            {{#unless isPaid}}
+                                            <div class="payment-warning">
+                                                <i class="fas fa-exclamation-triangle"></i>
+                                                <span>Đơn hàng của bạn đang chưa được hoàn tất, hãy chọn phương thức thanh toán để hoàn thành đơn hàng</span>
+                                            </div>
+                                            <div class="payment-actions">
+                                                <div class="payment-options">
+                                                    <button class="btn-payment momo" onclick="processPayment('{{_id}}', 'banking', 'momo')">
+                                                        <i class="fab fa-cc-visa"></i>
+                                                        Thanh toán MoMo
+                                                    </button>
+                                                    <button class="btn-payment vnpay" onclick="processPayment('{{_id}}', 'banking', 'vnpay')">
+                                                        <i class="fas fa-credit-card"></i>
+                                                        Thanh toán VNPay
+                                                    </button>
+                                                    <button class="btn-payment cod" onclick="processPayment('{{_id}}', 'cod')">
+                                                        <i class="fas fa-money-bill-wave"></i>
+                                                        Đổi sang tiền mặt
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            {{/unless}}
+                                        {{/if}}
+                                    <a href="/user/orders/{{_id}}" class="btn-action btn-view">
+                                        <i class="fas fa-eye"></i> Xem chi tiết
+                                    </a>
+                                </div>
+                            </div>
+                            {{/each}}
+                        {{else}}
+                            <p>Bạn chưa có đơn hàng nào.</p>
+                        {{/if}}
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -760,7 +942,7 @@
                 </div>
                 <div class="form-group">
                     <label>Ngày sinh</label>
-                    <input type="date" class="form-control" name="birthday" value="{{user.birthday}}">
+                    <input type="date" class="form-control" name="dateOfBirth" value="{{formatDate user.dateOfBirth}}">
                 </div>
                 <button type="submit" class="btn-edit" style="width: 100%;">
                     <i class="fas fa-save"></i> Lưu thay đổi
@@ -940,10 +1122,12 @@
         const profileContent = document.querySelector('#profileContent');
         const addressContent = document.querySelector('#addressContent');
         const passwordContent = document.querySelector('#passwordContent');
+        const ordersContent  = document.querySelector('#ordersContent');
         
         profileContent.style.display = 'none';
         addressContent.style.display = 'none';
         passwordContent.style.display = 'none';
+        ordersContent.style.display = 'none';
         
         // Show selected section
         switch(section) {
@@ -958,6 +1142,9 @@
                 break;
             case 'password':
                 passwordContent.style.display = 'block';
+                break;
+            case 'orders':
+                ordersContent.style.display = 'block';
                 break;
         }
     }
@@ -1621,6 +1808,81 @@ document.getElementById('changePasswordForm').addEventListener('submit', async f
         submitBtn.disabled = false;
     }
 });
+
+// Change Payment Method
+async function processPayment(orderId, paymentMethod, bankingMethod) {
+    const button = event.target;
+    const originalContent = button.innerHTML;
+    
+    // Disable all payment buttons for this order
+    const paymentActions = button.closest('.payment-actions');
+    const allButtons = paymentActions.querySelectorAll('.btn-payment');
+    allButtons.forEach(btn => btn.disabled = true);
+    
+    // Update button text
+    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
+    
+    try {
+        let apiUrl = '';
+        let requestBody = {};
+        
+        // Determine API endpoint and request body based on payment method
+        switch(bankingMethod) {
+            case 'momo':
+                apiUrl = `/order/retry-payment`
+                requestBody = {
+                    orderId, 
+                    bankingMethod,
+                    paymentMethod,
+                 };
+                break;
+            case 'vnpay':
+                apiUrl = `/api/orders/${orderId}/payment/vnpay`;
+                requestBody = { orderId: orderId };
+                break;
+            case 'cod':
+                apiUrl = `/api/orders/${orderId}/change-payment-method`;
+                requestBody = { paymentMethod: 'cod' };
+                break;
+        }
+        
+        const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(requestBody)
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            if (paymentMethod === 'cod') {
+                // COD - just reload the page
+                alert('Đổi phương thức thanh toán thành công!');
+                location.reload();
+            } else {
+                // MoMo/VNPay - redirect to payment page
+                if (result.payUrl || result.paymentUrl) {
+                    window.location.href = result.payUrl || result.paymentUrl;
+                } else {
+                    alert('Thanh toán thành công!');
+                    location.reload();
+                }
+            }
+        } else {
+            throw new Error(result.message || 'Có lỗi xảy ra');
+        }
+        
+    } catch (error) {
+        console.error('Payment error:', error);
+        alert(error.message || 'Có lỗi xảy ra. Vui lòng thử lại sau.');
+        
+        // Re-enable buttons and restore original content
+        allButtons.forEach(btn => btn.disabled = false);
+        button.innerHTML = originalContent;
+    }
+}
   </script>
 
 </body>

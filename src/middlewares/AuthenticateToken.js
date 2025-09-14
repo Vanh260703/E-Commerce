@@ -3,10 +3,7 @@ const jwt = require('jsonwebtoken');
 require('dotenv').config();
 function AuthenticateToken(req, res, next){
     const accessToken = req.cookies.accessToken;
-    const refreshToken = req.cookies.refreshToken;
-
     console.log('🛡️ AccessToken:', accessToken ? '✅ Có' : '❌ Không');
-    console.log('🔁 RefreshToken:', refreshToken ? '✅ Có' : '❌ Không');
 
     if(!accessToken) {
         return res.status(401).json({

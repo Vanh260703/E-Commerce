@@ -1,0 +1,397 @@
+<style>
+.review-container {
+    max-width: 800px;
+    margin: 0 auto;
+    background: #fff;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 8px;
+}
+
+.form-input, .form-textarea, .form-select {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #e1e5e9;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: border-color 0.3s;
+}
+
+.form-input:focus, .form-textarea:focus, .form-select:focus {
+    outline: none;
+    border-color: #007bff;
+}
+
+.rating-stars {
+    display: flex;
+    gap: 5px;
+    margin: 10px 0;
+}
+
+.star {
+    font-size: 24px;
+    color: #ddd;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.star:hover, .star.active {
+    color: #ffc107;
+}
+
+.product-section {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+    border-left: 4px solid #28a745;
+}
+
+.product-section h4 {
+    color: #28a745;
+    margin-bottom: 15px;
+}
+
+.order-section {
+    background: #e3f2fd;
+    padding: 20px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+    border-left: 4px solid #2196f3;
+}
+
+.order-section h4 {
+    color: #1976d2;
+    margin-bottom: 15px;
+}
+
+.btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    margin-right: 10px;
+    transition: all 0.3s;
+}
+
+.btn-primary {
+    background: #007bff;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #0056b3;
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #545b62;
+}
+
+.form-actions {
+    text-align: center;
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+}
+
+/* Styles cho comment tags */
+.quick-comments {
+    margin-top: 10px;
+}
+
+.comment-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.comment-tag {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    padding: 6px 12px;
+    border-radius: 15px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+    user-select: none;
+}
+
+.comment-tag:hover {
+    background: #007bff;
+    color: white;
+    border-color: #007bff;
+    transform: translateY(-1px);
+}
+
+.comment-tag.selected {
+    background: #28a745;
+    color: white;
+    border-color: #28a745;
+}
+</style>
+
+<div class="review-container">
+    <h2>Đánh giá đơn hàng #{{order.orderCode}}</h2>
+    <p>Cảm ơn bạn đã mua sắm tại cửa hàng. Hãy chia sẻ trải nghiệm của bạn!</p>
+
+    <form id="reviewForm">
+        <input type="hidden" name="userId" value="{{order.user._id}}">
+        <!-- Đánh giá từng sản phẩm -->
+        {{#each order.items}}
+        <div class="product-section">
+            <h4>{{this.name}}</h4>
+            <input type="hidden" name="productsReview[{{@index}}][productId]" value="{{this.product._id}}">
+            
+            <div class="form-group">
+                <label>Đánh giá sản phẩm *</label>
+                <div class="rating-stars" data-rating="productsReview[{{@index}}][rating]">
+                    <span class="star" data-value="1">★</span>
+                    <span class="star" data-value="2">★</span>
+                    <span class="star" data-value="3">★</span>
+                    <span class="star" data-value="4">★</span>
+                    <span class="star" data-value="5">★</span>
+                </div>
+                <input type="hidden" name="productsReview[{{@index}}][rating]" required>
+            </div>
+
+            <div class="form-group">
+                <label for="product_comment_{{@index}}">Nhận xét về {{this.product.name}}</label>
+                <textarea name="productsReview[{{@index}}][comment]" 
+                         id="product_comment_{{@index}}" 
+                         rows="3" 
+                         class="form-textarea"
+                         placeholder="Chia sẻ cảm nhận của bạn về sản phẩm..."></textarea>
+                
+                <div class="quick-comments">
+                    <small style="color: #666; margin-bottom: 8px; display: block;">💡 <strong>Gợi ý nhận xét</strong> (click để thêm):</small>
+                    <div class="comment-tags">
+                        <span class="comment-tag" data-target="product_comment_{{@index}}">Rất tươi và ngon 😋</span>
+                        <span class="comment-tag" data-target="product_comment_{{@index}}">Chất lượng tốt, đúng như mô tả 👍</span>
+                        <span class="comment-tag" data-target="product_comment_{{@index}}">Độ chín vừa phải, rất hài lòng 🥰</span>
+                        <span class="comment-tag" data-target="product_comment_{{@index}}">Đóng gói cẩn thận, sản phẩm ngon 📦</span>
+                        <span class="comment-tag" data-target="product_comment_{{@index}}">Sẽ mua lại lần sau ✨</span>
+                        <span class="comment-tag" data-target="product_comment_{{@index}}">Giá cả hợp lý, chất lượng tốt 💰</span>
+                        <span class="comment-tag" data-target="product_comment_{{@index}}">Hoa quả tươi ngon, gia đình rất thích 👨‍👩‍👧‍👦</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {{/each}}
+
+        <!-- Đánh giá đơn hàng -->
+        <div class="order-section">
+            <h4>Đánh giá tổng thể đơn hàng</h4>
+            <input type="hidden" name="orderReview[orderId]" value="{{order._id}}">
+            <div class="form-group">
+                <label>Đánh giá tổng thể *</label>
+                <div class="rating-stars" data-rating="orderReview[rating]">
+                    <span class="star" data-value="1">★</span>
+                    <span class="star" data-value="2">★</span>
+                    <span class="star" data-value="3">★</span>
+                    <span class="star" data-value="4">★</span>
+                    <span class="star" data-value="5">★</span>
+                </div>
+                <input type="hidden" name="orderReview[rating]" required>
+            </div>
+
+            <div class="form-group">
+                <label for="order_comment">Nhận xét về đơn hàng</label>
+                <textarea name="orderReview[comment]" 
+                         id="order_comment" 
+                         rows="4" 
+                         class="form-textarea"
+                         placeholder="Chia sẻ cảm nhận tổng thể về đơn hàng: chất lượng sản phẩm, dịch vụ giao hàng..."></textarea>
+                
+                <div class="quick-comments">
+                    <small style="color: #666; margin-bottom: 8px; display: block;">💡 <strong>Gợi ý nhận xét</strong> (click để thêm):</small>
+                    <div class="comment-tags">
+                        <span class="comment-tag" data-target="order_comment">Giao hàng nhanh, đóng gói cẩn thận 🚚</span>
+                        <span class="comment-tag" data-target="order_comment">Dịch vụ tốt, nhân viên thân thiện 😊</span>
+                        <span class="comment-tag" data-target="order_comment">Đơn hàng chính xác, không thiếu sót gì 📋</span>
+                        <span class="comment-tag" data-target="order_comment">Tất cả sản phẩm đều tươi ngon 🌟</span>
+                        <span class="comment-tag" data-target="order_comment">Sẽ đặt hàng thường xuyên ♻️</span>
+                        <span class="comment-tag" data-target="order_comment">Cửa hàng uy tín, đáng tin cậy 🏪</span>
+                        <span class="comment-tag" data-target="order_comment">Giao đúng giờ như hẹn ⏰</span>
+                        <span class="comment-tag" data-target="order_comment">Giá cả cạnh tranh, chất lượng tốt 💯</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Nút submit -->
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Gửi đánh giá</button>
+            <a href="/" class="btn btn-secondary">Quay về trang chủ</a>
+        </div>
+    </form>
+</div>
+
+<script>
+// Xử lý rating stars
+document.querySelectorAll('.rating-stars').forEach(ratingGroup => {
+    const stars = ratingGroup.querySelectorAll('.star');
+    const ratingName = ratingGroup.dataset.rating;
+    const hiddenInput = document.querySelector(`input[name="${ratingName}"]`);
+    
+    stars.forEach((star, index) => {
+        star.addEventListener('click', () => {
+            const rating = index + 1;
+            hiddenInput.value = rating;
+            
+            // Cập nhật trạng thái visual
+            stars.forEach((s, i) => {
+                s.classList.toggle('active', i < rating);
+            });
+        });
+        
+        star.addEventListener('mouseenter', () => {
+            stars.forEach((s, i) => {
+                s.style.color = i <= index ? '#ffc107' : '#ddd';
+            });
+        });
+    });
+    
+    ratingGroup.addEventListener('mouseleave', () => {
+        const currentRating = parseInt(hiddenInput.value) || 0;
+        stars.forEach((s, i) => {
+            s.style.color = i < currentRating ? '#ffc107' : '#ddd';
+        });
+    });
+});
+
+// Xử lý comment tags - TÍNH NĂNG MỚI
+document.querySelectorAll('.comment-tag').forEach(tag => {
+    tag.addEventListener('click', () => {
+        const targetId = tag.dataset.target;
+        const textarea = document.getElementById(targetId);
+        const comment = tag.textContent.trim();
+        
+        // Thêm comment vào textarea
+        if (textarea.value.trim() === '') {
+            textarea.value = comment;
+        } else {
+            // Thêm vào cuối với dấu phân cách
+            const currentValue = textarea.value.trim();
+            const separator = currentValue.endsWith('.') || currentValue.endsWith('!') || currentValue.endsWith('😊') ? ' ' : '. ';
+            textarea.value = currentValue + separator + comment;
+        }
+        
+        // Visual feedback
+        tag.classList.add('selected');
+        setTimeout(() => {
+            tag.classList.remove('selected');
+        }, 1000);
+        
+        // Focus vào textarea và scroll
+        textarea.focus();
+        textarea.scrollTop = textarea.scrollHeight;
+    });
+});
+
+// Validation form
+document.getElementById('reviewForm').addEventListener('submit', async function(e) {
+    e.preventDefault(); 
+    const requiredRatings = this.querySelectorAll('input[name*="rating"][required]');
+    let isValid = true;
+    
+    requiredRatings.forEach(input => {
+        if (!input.value) {
+            isValid = false;
+            const ratingGroup = this.querySelector(`[data-rating="${input.name}"]`);
+            if (ratingGroup) {
+                ratingGroup.style.border = '2px solid #dc3545';
+                ratingGroup.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+    });
+    
+    if (!isValid) {
+        e.preventDefault();
+        alert('Vui lòng đánh giá đầy đủ tất cả sản phẩm và đơn hàng!');
+    }
+
+    const formData = new FormData(e.target);
+    const data = Object.fromEntries(formData.entries());
+
+    const parsedData = {
+        reviewerName: data.reviewerName,
+        reviewerEmail: data.reviewerEmail,
+        userId: data.userId,
+        productsReview: [],
+        orderReview: {}
+    };
+
+    // Parse productsReview
+    Object.keys(data).forEach(key => {
+        const match = key.match(/^productsReview\[(\d+)\]\[(\w+)\]$/);
+        if (match) {
+            const index = parseInt(match[1]);
+            const field = match[2];
+            if (!parsedData.productsReview[index]) {
+                parsedData.productsReview[index] = {};
+            }
+            parsedData.productsReview[index][field] = data[key];
+        }
+    });
+
+    // Parse orderReview
+    Object.keys(data).forEach(key => {
+        const match = key.match(/^orderReview\[(\w+)\]$/);
+        if (match) {
+            const field = match[1];
+            parsedData.orderReview[field] = data[key];
+        }
+    });
+
+    // ép kiểu số
+    parsedData.productsReview = parsedData.productsReview.map(p => ({
+        ...p,
+        rating: Number(p.rating),
+    }));
+    if (parsedData.orderReview.rating) {
+        parsedData.orderReview.rating = Number(parsedData.orderReview.rating);
+    }
+
+    try {
+       const response = await fetch('/review/submit-review', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(parsedData),
+       });
+
+       const result = await response.json();
+
+       if (result.success) {
+        showToast('success', result.message);
+        setTimeout(() => window.location.href = "https://b597dbe3ce5d.ngrok-free.app/products", 1000);
+       } else {
+        showToast('error', result.message);
+       }
+    } catch (err) {
+        console.log(err);
+        showToast('error', 'Có lỗi xảy');
+    }
+});
+</script>

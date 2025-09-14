@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thanh toán thất bại</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+        .container {
+            max-width: 500px;
+            margin: 50px auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .icon {
+            font-size: 60px;
+            color: #e74c3c;
+        }
+        h1 {
+            color: #e74c3c;
+        }
+        p {
+            font-size: 16px;
+            color: #555;
+        }
+        .order-info {
+            margin-top: 20px;
+            padding: 15px;
+            background: #fcebea;
+            border-radius: 8px;
+            text-align: left;
+        }
+        .order-info strong {
+            display: inline-block;
+            width: 140px;
+        }
+        .btn {
+            display: inline-block;
+            margin-top: 25px;
+            padding: 10px 20px;
+            background: #e74c3c;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: bold;
+        }
+        .btn:hover {
+            background: #c0392b;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="icon">❌</div>
+        <h1>Thanh toán thất bại</h1>
+        <p>{{message}}</p>
+
+        {{#if order}}
+        <div class="order-info">
+            <p><strong>Mã đơn hàng:</strong> {{order._id}}</p>
+            <p><strong>Tên khách:</strong> {{order.user.name}}</p>
+            <p><strong>Email:</strong> {{order.user.email}}</p>
+            <p><strong>Số tiền:</strong> {{formatMoney order.totalAmount}} VNĐ</p>
+            <p><strong>Trạng thái:</strong> {{#if (eq order.status 'failed')}} Thất bại {{/if}}</p>
+        </div>
+        {{/if}}
+
+        <a href="/products" class="btn">Quay về trang chủ</a>
+    </div>
+</body>
+</html>
